@@ -5,7 +5,7 @@ const FollowingBlogs = () => {
   
   const  [allBlogs,setAllBlogs]=useState([])
   const sendToken=localStorage.getItem('token')
-  // console.log(sendToken)
+
   const fetchBlogsUser=async()=>{
     const response=await axios.get('http://localhost:4000/api/user/follow-user-blog',
       {

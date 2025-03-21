@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
@@ -81,7 +79,7 @@ const AddblogCategory = () => {
         reset({ categoryName: "" });
         setSlug("");
         toast.success(response.data.message);
-        fetchCategories(); // Refresh the category list after adding a new one
+        fetchCategories(); 
       }
     } catch (error) {
       toast.error(error.response.data.message);

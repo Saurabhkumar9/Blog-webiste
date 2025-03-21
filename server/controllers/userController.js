@@ -141,7 +141,7 @@ const updateProfile = async (req, res, next) => {
 
     let imageUrl = user.avatar;
     let publicId = user.avatarPublicId;
-    console.log(publicId);
+    // console.log(publicId);
 
     if (req.file) {
       if (user.avatarPublicId) {

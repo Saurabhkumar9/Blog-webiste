@@ -4,7 +4,7 @@ const User = require("../models/user.model");
 const followingUserBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(userId)
+    // console.log(userId)
     const user = await User.findById(userId).populate("following", "_id");
 
     if (!user) {

@@ -11,7 +11,7 @@ const Comments = () => {
       const response = await axios.get(
         `http://localhost:4000/api/user/find-single-blog/${id}`
       );
-      console.log(response.data);
+      // console.log(response.data);
       if (response.data.success) {
         setComments(response.data.findBlog.comments);
       }

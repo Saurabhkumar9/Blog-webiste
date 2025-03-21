@@ -11,12 +11,14 @@ export const AuthProvider = ({ children }) => {
   const [iconUrl, setIconUrl] = useState("");
   const [token, setToken] = useState("");
 
+
   // Check localStorage for token on initial load
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       setIsLogin(true);
       setToken(storedToken);
+      
     }
   }, []);
 

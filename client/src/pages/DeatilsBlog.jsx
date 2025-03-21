@@ -19,7 +19,7 @@ const DetailsBlog = () => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState([]);
   const [comments, setComments] = useState([]);
-  const [isFollowing, setIsFollowing] = useState(false);
+  // const [isFollowing, setIsFollowing] = useState(false);
   const [details, setDetails] = useState({});
 
   const {
@@ -156,13 +156,13 @@ const DetailsBlog = () => {
           <strong className="text-black">Created Date:</strong>{" "}
           <span className="font-semibold">{details.createdAt}</span>
         </p>
-        <button
+        {/* <button
           onClick={handleFollow}
           className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
         >
           {isFollowing ? <FaUserCheck size={16} /> : <FaUserPlus size={16} />}
           {isFollowing ? "Following" : "Follow"}
-        </button>
+        </button> */}
       </div>
 
       {/* Like & Comments Count */}
