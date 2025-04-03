@@ -5,9 +5,17 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
-const path = require("path");
+const nodemailer=require('nodemailer')
+const crypto = require("crypto");
 
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD,
+  },
+});
 
 
 const registerUser = async (req, res, next) => {
@@ -15,9 +23,7 @@ const registerUser = async (req, res, next) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return next(
-        handleErrors(400, "Please provide name, email, and password")
-      );
+      return next(handleErrors(400, "Please provide name, email, and password"));
     }
 
     const existEmail = await User.findOne({ email });
@@ -27,22 +33,62 @@ const registerUser = async (req, res, next) => {
 
     const hashPassword = await bcrypt.hash(password, 10);
 
+    const otp = crypto.randomInt(100000, 999999).toString(); 
+
     const newUser = await User.create({
       name,
       email,
       password: hashPassword,
+      isverify: false,
+      otp, 
     });
-    delete newUser.password;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Verify Your Email",
+      text: `Your OTP is: ${otp}`,
+    });
+
+   
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
     res.status(201).json({
       success: true,
-      message: "User created successfully",
-      name: name,
-      email: email,
+      message: "Verify Your Email",
+      user: userResponse,
     });
   } catch (error) {
+    console.error("Error in registerUser:", error);
     return next(handleErrors(500, "Internal server error"));
   }
-};
+};;
+
+
+const verifyEmail=async (req, res, next) => {
+
+  try {
+    const { email, otp } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(400).json({ message: "User not found!" });
+    if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP!" });
+
+    user.isverify = true;
+    user.otp = null;
+    await user.save();
+
+    res.json({success:true, message: "Email Verified and user register Successfully!" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+}
+
+
+
+
+
 
 const userLogin = async (req, res, next) => {
   try {
@@ -51,12 +97,12 @@ const userLogin = async (req, res, next) => {
       return next(handleErrors(400, "Please provide email and password"));
     }
     const existEmail = await User.findOne({ email });
-    if (!existEmail) {
-      return next(handleErrors(400, "Invalid email "));
+    if (!existEmail || !existEmail.isverify) {
+      return next(handleErrors(400, "Invalid email verify our email using opt "));
     }
     const isPasswordMatch = await bcrypt.compare(password, existEmail.password);
     if (!isPasswordMatch) {
-      return next(handleErrors(400, "Invalid password not match"));
+      return next(handleErrors(400, "Invalid email or password not match"));
     }
 
     const Key = process.env.JWT_key;
@@ -64,7 +110,7 @@ const userLogin = async (req, res, next) => {
       id: existEmail._id,
       email: existEmail.email,
     };
-    const token = jwt.sign({ payload }, Key, { expiresIn: "2d" });
+    const token = jwt.sign({ payload }, Key, { expiresIn: "90d" });
 
     res.status(201).json({
       success: true,
@@ -125,63 +171,6 @@ const showProfile = async (req, res, next) => {
   }
 };
 
-
-
-
-// const updateProfile = async (req, res, next) => {
-//   try {
-//     const { name, bio } = req.body;
-
-//     if (!name) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Please provide name and bio." });
-//     }
-
-//     const userId = req.user.id;
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "User not found" });
-//     }
-
-//     let imageUrl = user.avatar;
-//     let publicId = user.avatarPublicId;
-//     // console.log(publicId);
-
-//     if (req.file) {
-//       if (user.avatarPublicId) {
-//         await cloudinary.uploader.destroy(user.avatarPublicId);
-//       }
-
-//       imageUrl = req.file.path;
-//       publicId = req.file.filename;
-//     }
-
-//     user.name = name;
-//     if(bio){
-//       user.bio = bio;
-//     }
-//     user.avatar = imageUrl;
-//     user.avatarPublicId = publicId;
-
-//     await user.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Profile updated successfully",
-//       data: {
-//         name: user.name,
-//         bio: user.bio,
-//         avatar: user.avatar,
-//       },
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 
 
@@ -287,5 +276,6 @@ module.exports = {
   updatePassword,
   updateProfile,
   showProfile,
-  showAllUser
+  showAllUser,
+  verifyEmail
 };

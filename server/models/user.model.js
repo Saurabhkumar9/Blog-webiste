@@ -42,6 +42,13 @@ const userSchema = new mongoose.Schema(
     avatarPublicId: {
       type: String,
     },
+    otp:{
+      type:String
+    },
+    isverify:{
+      type:Boolean,
+      default:false
+    }
   },
   {
     timestamps: true,
