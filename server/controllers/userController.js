@@ -26,23 +26,34 @@ const registerUser = async (req, res, next) => {
       return next(handleErrors(400, "Please provide name, email, and password"));
     }
 
-    const existEmail = await User.findOne({ email });
-    if (existEmail) {
-      return next(handleErrors(400, "Email already exists"));
-    }
+    const existingUser = await User.findOne({ email });
 
+    const otp = crypto.randomInt(100000, 999999).toString();
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const otp = crypto.randomInt(100000, 999999).toString(); 
+    if (existingUser) {
+      // अगर user verified है, तो error भेजो
+      if (existingUser.isverify) {
+        return next(handleErrors(400, "Email already registered. Please login."));
+      } else {
+        // अगर user verified नहीं है, तो OTP update कर दो और resend करो
+        existingUser.name = name;
+        existingUser.password = hashPassword;
+        existingUser.otp = otp;
+        await existingUser.save();
+      }
+    } else {
+      // नया user create करो
+      await User.create({
+        name,
+        email,
+        password: hashPassword,
+        isverify: false,
+        otp,
+      });
+    }
 
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashPassword,
-      isverify: false,
-      otp, 
-    });
-
+    // Mail भेजो
     await transporter.sendMail({
       from: process.env.EMAIL,
       to: email,
@@ -50,26 +61,22 @@ const registerUser = async (req, res, next) => {
       text: `Your OTP is: ${otp}`,
     });
 
-   
-    const userResponse = newUser.toObject();
-    delete userResponse.password;
-
     res.status(201).json({
       success: true,
-      message: "Verify Your Email",
-      user: userResponse,
+      message: "OTP sent to your email. Please verify to complete registration.",
     });
+
   } catch (error) {
     console.error("Error in registerUser:", error);
     return next(handleErrors(500, "Internal server error"));
   }
-};;
+};
 
 
-const verifyEmail=async (req, res, next) => {
-
+const verifyEmail = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
+
     const user = await User.findOne({ email });
 
     if (!user) return res.status(400).json({ message: "User not found!" });
@@ -79,12 +86,12 @@ const verifyEmail=async (req, res, next) => {
     user.otp = null;
     await user.save();
 
-    res.json({success:true, message: "Email Verified and user register Successfully!" });
+    res.json({ success: true, message: "Email Verified Successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    console.log("verifyEmail error:", error);
+    return next(handleErrors(500, "Internal server error"));
   }
-}
-
+};
 
 
 
@@ -96,31 +103,34 @@ const userLogin = async (req, res, next) => {
     if (!email || !password) {
       return next(handleErrors(400, "Please provide email and password"));
     }
-    const existEmail = await User.findOne({ email });
-    if (!existEmail || !existEmail.isverify) {
-      return next(handleErrors(400, "Invalid email verify our email using opt "));
+
+    const user = await User.findOne({ email });
+    if (!user || !user.isverify) {
+      return next(handleErrors(400, "Invalid email or please verify your email first"));
     }
-    const isPasswordMatch = await bcrypt.compare(password, existEmail.password);
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
-      return next(handleErrors(400, "Invalid email or password not match"));
+      return next(handleErrors(400, "Invalid email or password"));
     }
 
-    const Key = process.env.JWT_key;
-    const payload = {
-      id: existEmail._id,
-      email: existEmail.email,
-    };
-    const token = jwt.sign({ payload }, Key, { expiresIn: "90d" });
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_key,
+      { expiresIn: "90d" }
+    );
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "user login successfully",
-      token: token,
+      message: "User login successfully",
+      token,
     });
   } catch (error) {
     return next(handleErrors(500, "Internal server error"));
   }
 };
+
+
 
 const updatePassword = async (req, res, next) => {
   try {
