@@ -18,19 +18,23 @@ export const AuthProvider = ({ children }) => {
     if (storedToken) {
       setIsLogin(true);
       setToken(storedToken);
+    
       
     }
   }, []);
 
 
   const login = (token) => {
+  
     localStorage.setItem("token", token);
-    setIsLogin(true);
     setToken(token);
+    setIsLogin(true);
+    
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+
     setIsLogin(false);
     setToken("");
     setIconUrl("");
@@ -42,6 +46,7 @@ export const AuthProvider = ({ children }) => {
 
  
   const sendToken=localStorage.getItem('token')
+  
   return (
     <AuthContext.Provider
       value={{

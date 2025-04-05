@@ -32,18 +32,18 @@ const registerUser = async (req, res, next) => {
     const hashPassword = await bcrypt.hash(password, 10);
 
     if (existingUser) {
-      // अगर user verified है, तो error भेजो
+     
       if (existingUser.isverify) {
         return next(handleErrors(400, "Email already registered. Please login."));
       } else {
-        // अगर user verified नहीं है, तो OTP update कर दो और resend करो
+        
         existingUser.name = name;
         existingUser.password = hashPassword;
         existingUser.otp = otp;
         await existingUser.save();
       }
     } else {
-      // नया user create करो
+      
       await User.create({
         name,
         email,
@@ -53,7 +53,7 @@ const registerUser = async (req, res, next) => {
       });
     }
 
-    // Mail भेजो
+    
     await transporter.sendMail({
       from: process.env.EMAIL,
       to: email,
@@ -92,9 +92,6 @@ const verifyEmail = async (req, res, next) => {
     return next(handleErrors(500, "Internal server error"));
   }
 };
-
-
-
 
 
 const userLogin = async (req, res, next) => {
@@ -165,6 +162,7 @@ const updatePassword = async (req, res, next) => {
 const showProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
+   
 
     const user = await User.findById(userId);
 
@@ -180,84 +178,6 @@ const showProfile = async (req, res, next) => {
     return next(handleErrors(500, "Internal Server Error"));
   }
 };
-
-
-
-
-const updateProfile = async (req, res, next) => {
-  try {
-    const { name, bio } = req.body;
-
-    if (!name) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide name and bio.",
-      });
-    }
-
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    let imageUrl = user.avatar;
-    // let publicId = user.avatarPublicId;
-
-   
-    user.name = name;
-    if (bio) {
-      user.bio = bio;
-    }
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      data: {
-        name: user.name,
-        bio: user.bio,
-        avatar: imageUrl,
-      },
-    });
-
-    
-    if (req.file) {
-      setImmediate(async () => {
-        try {
-         
-          if (user.avatarPublicId) {
-            await cloudinary.uploader.destroy(user.avatarPublicId);
-          }
-
-          
-          const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: "user_uploads",
-          });
-
-          
-          user.avatar = result.secure_url;
-          user.avatarPublicId = result.public_id;
-          await user.save();
-
-          
-          fs.unlink(req.file.path, (err) => {
-            if (err) console.error("Error deleting local file:", err);
-          });
-        } catch (err) {
-          console.error("Error in background image upload:", err);
-        }
-      });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
 
 
 
@@ -278,6 +198,140 @@ const showAllUser=async(req,res,next)=>{
   }
 
 }
+
+
+
+// const updateProfile = async (req, res, next) => {
+//   try {
+//     const { name, bio } = req.body;
+
+//     if (!name) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Please provide name and bio.",
+//       });
+//     }
+
+//     const userId = req.user.id;
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     let imageUrl = user.avatar;
+//     // let publicId = user.avatarPublicId;
+
+   
+//     user.name = name;
+//     if (bio) {
+//       user.bio = bio;
+//     }
+//     await user.save();
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Profile updated successfully",
+//       data: {
+//         name: user.name,
+//         bio: user.bio,
+//         avatar: imageUrl,
+//       },
+//     });
+
+    
+//     if (req.file) {
+//       setImmediate(async () => {
+//         try {
+         
+//           if (user.avatarPublicId) {
+//             await cloudinary.uploader.destroy(user.avatarPublicId);
+//           }
+
+          
+//           const result = await cloudinary.uploader.upload(req.file.path, {
+//             folder: "user_uploads",
+//           });
+
+          
+//           user.avatar = result.secure_url;
+//           user.avatarPublicId = result.public_id;
+//           await user.save();
+
+          
+//           fs.unlink(req.file.path, (err) => {
+//             if (err) console.error("Error deleting local file:", err);
+//           });
+//         } catch (err) {
+//           console.error("Error in background image upload:", err);
+//         }
+//       });
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, bio } = req.body;
+
+    if (!name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide name and bio." });
+    }
+
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    let imageUrl = user.avatar;
+    let publicId = user.avatarPublicId;
+    // console.log(publicId);
+
+    if (req.file) {
+      if (user.avatarPublicId) {
+        await cloudinary.uploader.destroy(user.avatarPublicId);
+      }
+
+      imageUrl = req.file.path;
+      publicId = req.file.filename;
+    }
+
+    user.name = name;
+    if(bio){
+      user.bio = bio;
+    }
+    user.avatar = imageUrl;
+    user.avatarPublicId = publicId;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        name: user.name,
+        bio: user.bio,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 module.exports = {

@@ -293,6 +293,7 @@ const Login = () => {
         });
 
         if (response.data.success) {
+
           toast.success("Email Verified! You can now login.");
           reset();
           setIsSignup(false);
@@ -308,16 +309,15 @@ const Login = () => {
           password: data.password,
         });
 
-        if (response.data.success) {
+          
+       
           login(response.data.token);
-          toast.success("Login Successful!");
+          toast.success(response.data.message)
           reset();
           setTimeout(() => {
             navigate("/");
           }, 2000);
-        } else {
-          toast.error(response.data.message || "Login Failed!");
-        }
+        
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong!");

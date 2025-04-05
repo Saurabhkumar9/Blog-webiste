@@ -5,8 +5,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const CreateBlog = () => {
-  
   const [category, setCategory] = useState([]);
+  const [loading, setLoading] = useState(false); // ✅ Loading state
   const { sendToken } = useAuth();
 
   const {
@@ -17,7 +17,7 @@ const CreateBlog = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    // console.log(data)
+    setLoading(true); // ✅ Disable button
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("categoryName", data.categoryName); 
@@ -44,13 +44,16 @@ const CreateBlog = () => {
         toast.success(response.data.message);
         reset();
       } else {
-        toast.error(" Failed to create blog!");
+        toast.error("Failed to create blog!");
       }
     } catch (error) {
       console.error("Error:", error);
       toast.error(error.response?.data?.message || "Something went wrong!");
+    } finally {
+      setLoading(false); // ✅ Enable button again
     }
   };
+
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
@@ -80,7 +83,7 @@ const CreateBlog = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-2 sm:p-4">
       <div className="bg-white p-4 sm:p-8 rounded-xl shadow-md w-full max-w-3xl">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center mb-4 sm:mb-6">
-        Express Your Ideas
+          Express Your Ideas
         </h2>
 
         <form
@@ -191,9 +194,14 @@ const CreateBlog = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white p-2 sm:p-3 rounded-md hover:bg-blue-700 transition-all text-sm sm:text-base"
+            disabled={loading} // ✅ Disable when loading
+            className={`w-full p-2 sm:p-3 rounded-md text-sm sm:text-base transition-all ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
           >
-            Submit Blog
+            {loading ? "Submitting..." : "Submit Blog"} {/* ✅ Dynamic text */}
           </button>
         </form>
       </div>
@@ -202,4 +210,3 @@ const CreateBlog = () => {
 };
 
 export default CreateBlog;
-

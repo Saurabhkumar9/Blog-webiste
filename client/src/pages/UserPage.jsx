@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 
 const UserPage = () => {
   const { sendToken } = useAuth();
+  console.log(sendToken)
   const [search, setSearch] = useState("");
   const [following, setFollowing] = useState([]);
   const [followers, setFollowers] = useState([]);
