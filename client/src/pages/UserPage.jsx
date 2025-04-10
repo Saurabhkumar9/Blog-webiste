@@ -3,8 +3,10 @@ import { FiUserPlus, FiUserCheck, FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const UserPage = () => {
+  
   const { sendToken } = useAuth();
   console.log(sendToken)
   const [search, setSearch] = useState("");
@@ -17,7 +19,7 @@ const UserPage = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/user/show/user",
+        `${BASE_API_URL}/user/show/user`,
         {
           headers: { Authorization: `Bearer ${sendToken}` },
         }
@@ -32,7 +34,7 @@ const UserPage = () => {
   const fetchFollowing = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/user/fetch/follow",
+        `${BASE_API_URL}/user/fetch/follow`,
         {
           headers: { Authorization: `Bearer ${sendToken}` },
         }
@@ -42,9 +44,7 @@ const UserPage = () => {
       );
       setFollowing(followingIds);
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error fetching following list"
-      );
+      
     }
   };
 
@@ -52,7 +52,7 @@ const UserPage = () => {
   const fetchFollowers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/user/following-user",
+        `${BASE_API_URL}/user/following-user`,
         {
           headers: { Authorization: `Bearer ${sendToken}` },
         }
@@ -60,7 +60,6 @@ const UserPage = () => {
       console.log("folling", response.data.followers);
       setFollowers(response.data.followers);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error fetching followers");
     }
   };
 
@@ -74,7 +73,7 @@ const UserPage = () => {
   const handleFollow = async (userId) => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/follow",
+        `${BASE_API_URL}/user/follow`,
         { followingId: userId },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
@@ -91,7 +90,7 @@ const UserPage = () => {
   const handleUnfollow = async (userId) => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/follow",
+        `${BASE_API_URL}/user/follow`,
         { followingId: userId },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );

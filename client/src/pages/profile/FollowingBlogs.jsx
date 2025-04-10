@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import BlogCard from "../../components/BlogCard";
 import axios from 'axios'
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 const FollowingBlogs = () => {
   
   const  [allBlogs,setAllBlogs]=useState([])
   const sendToken=localStorage.getItem('token')
 
   const fetchBlogsUser=async()=>{
-    const response=await axios.get('http://localhost:4000/api/user/follow-user-blog',
+    const response=await axios.get(`${BASE_API_URL}/user/follow-user-blog`,
       {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },
       }
     )
-    console.log(response.data)
+   
     setAllBlogs(response.data.blogs)
   }
 useEffect(()=>{

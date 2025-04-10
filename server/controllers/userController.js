@@ -129,35 +129,7 @@ const userLogin = async (req, res, next) => {
 
 
 
-const updatePassword = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-      return next(handleErrors(400, "Please provide email and password"));
-    }
-
-    const exist = await User.findOne({ email });
-    if (!exist) {
-      return next(handleErrors(400, "Invalid email"));
-    }
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    const updatedUser = await User.findOneAndUpdate(
-      { email },
-      { password: hashPassword },
-      { new: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Password updated successfully",
-    });
-  } catch (error) {
-    return next(handleErrors(500, "Internal Server Error"));
-  }
-};
 
 const showProfile = async (req, res, next) => {
   try {
@@ -199,81 +171,6 @@ const showAllUser=async(req,res,next)=>{
 
 }
 
-
-
-// const updateProfile = async (req, res, next) => {
-//   try {
-//     const { name, bio } = req.body;
-
-//     if (!name) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Please provide name and bio.",
-//       });
-//     }
-
-//     const userId = req.user.id;
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     let imageUrl = user.avatar;
-//     // let publicId = user.avatarPublicId;
-
-   
-//     user.name = name;
-//     if (bio) {
-//       user.bio = bio;
-//     }
-//     await user.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Profile updated successfully",
-//       data: {
-//         name: user.name,
-//         bio: user.bio,
-//         avatar: imageUrl,
-//       },
-//     });
-
-    
-//     if (req.file) {
-//       setImmediate(async () => {
-//         try {
-         
-//           if (user.avatarPublicId) {
-//             await cloudinary.uploader.destroy(user.avatarPublicId);
-//           }
-
-          
-//           const result = await cloudinary.uploader.upload(req.file.path, {
-//             folder: "user_uploads",
-//           });
-
-          
-//           user.avatar = result.secure_url;
-//           user.avatarPublicId = result.public_id;
-//           await user.save();
-
-          
-//           fs.unlink(req.file.path, (err) => {
-//             if (err) console.error("Error deleting local file:", err);
-//           });
-//         } catch (err) {
-//           console.error("Error in background image upload:", err);
-//         }
-//       });
-//     }
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 
 
@@ -332,14 +229,88 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+const sendResetOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return next(handleErrors(400, "Please provide an email"));
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(handleErrors(404, "User not found"));
+    }
+
+    // Generate 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+  
+
+    // Save OTP to user
+    user.otp = otp;
+    await user.save();
+
+    // Send Email
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Reset Your Password",
+      text: `Your OTP to reset password is: ${otp}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully to your email",
+    });
+  } catch (error) {
+    return next(handleErrors(500, "Internal Server Error"));
+  }
+};
+
+
+const resetPasswordWithOTP = async (req, res, next) => {
+  try {
+    const { email, otp, Password } = req.body;
+
+    if (!email || !otp || !Password) {
+      return next(handleErrors(400, "Please provide email, otp and new password"));
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return next(handleErrors(404, "User not found"));
+    }
+
+    if (user.otp !== (otp)) {
+      return next(handleErrors(400, "Invalid OTP"));
+    }
+
+    const hashPassword = await bcrypt.hash(Password, 10);
+    user.password = hashPassword;
+    user.otp = null; // clear OTP
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    return next(handleErrors(500, "Internal Server Error"));
+  }
+};
+
 
 
 module.exports = {
   registerUser,
   userLogin,
-  updatePassword,
+  resetPasswordWithOTP,
   updateProfile,
   showProfile,
   showAllUser,
-  verifyEmail
+  verifyEmail,
+  sendResetOTP
 };

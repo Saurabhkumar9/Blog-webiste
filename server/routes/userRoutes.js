@@ -1,5 +1,5 @@
 const express=require('express')
- const {registerUser, userLogin, updatePassword, updateProfile, showProfile, showAllUser, verifyEmail}=require('../controllers/userController')
+ const {registerUser, userLogin,sendResetOTP,resetPasswordWithOTP, updateProfile, showProfile, showAllUser, verifyEmail}=require('../controllers/userController')
 const authUser = require('../middlewares/authUser')
 const upload = require('../middlewares/multer')
 
@@ -12,8 +12,9 @@ const upload = require('../middlewares/multer')
     userRouter.post('/verify-email',verifyEmail)
 
     userRouter.post('/login',userLogin)
+    userRouter.post('/send-reset-otp',sendResetOTP)
 
-    userRouter.post('/password-reset', updatePassword)
+    userRouter.post('/password-reset',resetPasswordWithOTP)
 
   
 

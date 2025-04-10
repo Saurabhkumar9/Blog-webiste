@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const CreateBlog = () => {
   const [category, setCategory] = useState([]);
@@ -30,7 +31,7 @@ const CreateBlog = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/create-blog",
+        `${BASE_API_URL}/user/create-blog`,
         formData,
         {
           headers: {
@@ -57,7 +58,7 @@ const CreateBlog = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/user/category-show",
+        `${BASE_API_URL}/user/category-show`,
         {
           headers: {
             Authorization: `Bearer ${sendToken}`,
@@ -69,9 +70,9 @@ const CreateBlog = () => {
         setCategory(response.data.existCategory);
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error fetching categories!"
-      );
+      // toast.error(
+      //   error.response?.data?.message || "Error fetching categories!"
+      // );
     }
   };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 const Comments = () => {
   const { id } = useParams();
   const [comments, setComments] = useState([]);
@@ -9,14 +9,14 @@ const Comments = () => {
   const showDetails = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/user/find-single-blog/${id}`
+        `${BASE_API_URL}/user/find-single-blog/${id}`
       );
       // console.log(response.data);
       if (response.data.success) {
         setComments(response.data.findBlog.comments);
       }
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      // console.error("Error fetching comments:", error);
     }
   };
 

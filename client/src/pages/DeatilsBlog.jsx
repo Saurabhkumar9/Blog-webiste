@@ -12,15 +12,16 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const DetailsBlog = () => {
   const { id } = useParams();
-  const { sendToken } = useAuth();
+  const { sendToken, user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState([]);
   const [comments, setComments] = useState([]);
-  // const [isFollowing, setIsFollowing] = useState(false);
   const [details, setDetails] = useState({});
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const {
     register,
@@ -32,52 +33,27 @@ const DetailsBlog = () => {
   const handleLike = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/like",
+        `${BASE_API_URL}/user/like`,
         { BlogId: id },
-        {
-          headers: {
-            Authorization: `Bearer ${sendToken}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${sendToken}` } }
       );
-
       if (response.data.success) {
         setLiked(response.data.liked);
         setLikeCount(response.data.likeCount || 0);
-        // toast.success(response.data.message);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong!");
     }
   };
 
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-  };
-
   const onSubmit = async (data) => {
     try {
-      const commentInfo = {
-        comment: data.comment,
-        BlogId: id,
-      };
-
       const response = await axios.post(
-        "http://localhost:4000/api/user/comment-add",
-        commentInfo,
-        {
-          headers: {
-            Authorization: `Bearer ${sendToken}`,
-          },
-        }
+        `${BASE_API_URL}/user/comment-add`,
+        { comment: data.comment, BlogId: id },
+        { headers: { Authorization: `Bearer ${sendToken}` } }
       );
-
-      if (response.data.success) {
-        // toast.success(response.data.message);
-        // Refresh comments after adding a new one
-        showDetails();
-      }
-
+      if (response.data.success) showDetails();
       reset();
     } catch (error) {
       toast.error(error.response.data.message);
@@ -85,13 +61,19 @@ const DetailsBlog = () => {
   };
 
   const showDetails = async () => {
-    const response = await axios.get(
-      `http://localhost:4000/api/user/find-single-blog/${id}`
-    );
-    if (response.data.success) {
-      setDetails(response.data.findBlog);
-      setComments(response.data.findBlog.comments);
-      setLikeCount(response.data.findBlog.likes);
+    try {
+      const response = await axios.get(
+        `${BASE_API_URL}/user/find-single-blog/${id}`,
+        { headers: { Authorization: `Bearer ${sendToken}` } }
+      );
+      if (response.data.success) {
+        setDetails(response.data.findBlog);
+        setComments(response.data.findBlog.comments);
+        setLikeCount(response.data.findBlog.likes);
+        setIsFollowing(response.data.isFollowing);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message);
     }
   };
 
@@ -102,22 +84,29 @@ const DetailsBlog = () => {
   const handleDeleteComment = async (commentId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:4000/api/user/comment/${commentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${sendToken}`,
-          },
-        }
+        `${BASE_API_URL}/user/comment/${commentId}`,
+        { headers: { Authorization: `Bearer ${sendToken}` } }
       );
-
       if (response.data.success) {
-        setComments((prevComments) =>
-          prevComments.filter((comment) => comment._id !== commentId)
-        );
-        // toast.success(response.data.message);
+        setComments(prev => prev.filter(comment => comment._id !== commentId));
       }
     } catch (error) {
       toast.error(error.response.data.message);
+    }
+  };
+
+  const handleFollow = async () => {
+    try {
+      const response = await axios.post(
+        `${BASE_API_URL}/user/follow`,
+        { followingId: details.userId },
+        { headers: { Authorization: `Bearer ${sendToken}` } }
+      );
+      
+        setIsFollowing(response.data.isFollowing);
+       
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error following user");
     }
   };
 
@@ -132,21 +121,41 @@ const DetailsBlog = () => {
         />
       </div>
 
-      {/* Blog Title & Category */}
-      <h1 className="text-2xl font-bold mt-4">{details.title}</h1>
-      <p className="text-sm text-gray-500">
-        <strong className="text-black text-xl">Category:</strong>{" "}
-        {details.categoryName}
-      </p>
-      <p className="text-sm text-red-500">
-        <strong className="text-black text-xl">Description:</strong>
-        {details.description}
-      </p>
+      {/* Follow Button (Below Image) */}
+      {user?.id !== details.userId && (
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleFollow}
+            className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+              isFollowing
+                ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            } transition-colors`}
+          >
+            {isFollowing ? (
+              <>
+                <FaUserCheck /> Following
+              </>
+            ) : (
+              <>
+                <FaUserPlus /> Follow
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Blog Content */}
+      <h1 className="text-2xl font-bold mt-4">{details.title}</h1>
+      <p className="text-sm text-gray-500">
+        <strong className="text-black text-xl">Category:</strong> {details.categoryName}
+      </p>
+      <p className="text-sm text-red-500">
+        <strong className="text-black text-xl">Description:</strong> {details.description}
+      </p>
       <p className="mt-4 text-gray-700">{details.content}</p>
 
-      {/* Created By & Follow Button */}
+      {/* Author Info */}
       <div className="mt-4 flex items-center justify-between">
         <p className="text-sm text-gray-600">
           <strong className="text-black text-xl">Created by:</strong>{" "}
@@ -154,18 +163,13 @@ const DetailsBlog = () => {
         </p>
         <p className="text-sm text-gray-600">
           <strong className="text-black">Created Date:</strong>{" "}
-          <span className="font-semibold">{details.createdAt}</span>
+          <span className="font-semibold">
+            {new Date(details.createdAt).toLocaleDateString()}
+          </span>
         </p>
-        {/* <button
-          onClick={handleFollow}
-          className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
-        >
-          {isFollowing ? <FaUserCheck size={16} /> : <FaUserPlus size={16} />}
-          {isFollowing ? "Following" : "Follow"}
-        </button> */}
       </div>
 
-      {/* Like & Comments Count */}
+      {/* Interactions */}
       <div className="mt-4 flex items-center space-x-4">
         <button
           onClick={handleLike}
@@ -180,7 +184,7 @@ const DetailsBlog = () => {
         </div>
       </div>
 
-      {/* Comment Box */}
+      {/* Comments Section */}
       <div className="mt-6">
         <h2 className="text-lg font-semibold">Comments</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-2">
@@ -191,9 +195,7 @@ const DetailsBlog = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
           />
           {errors.comment && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.comment.message}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.comment.message}</p>
           )}
           <button
             type="submit"
@@ -204,7 +206,7 @@ const DetailsBlog = () => {
         </form>
       </div>
 
-      {/* Display Comments (Scrollable Section) */}
+      {/* Comments List */}
       <div className="mt-4 max-h-[300px] overflow-y-auto space-y-2 border p-2 rounded-lg">
         {comments.length > 0 ? (
           comments.map((comment) => (
@@ -213,12 +215,10 @@ const DetailsBlog = () => {
               className="border-b py-2 flex flex-col lg:flex-row justify-between"
             >
               <div className="w-full lg:w-[70%]">
-                <small>comment...</small>
                 <p className="text-gray-700">{comment.comment}</p>
               </div>
               <div className="relative p-4 border rounded-md bg-white shadow-md">
                 <p className="text-sm text-gray-500">
-                  <strong>Date:</strong>{" "}
                   {new Date(comment.createdAt).toLocaleDateString("en-US", {
                     day: "numeric",
                     month: "long",
@@ -226,8 +226,6 @@ const DetailsBlog = () => {
                   })}
                 </p>
                 <p className="text-sm font-semibold">{comment.userName}</p>
-
-                {/* Delete Icon Positioned Bottom Right */}
                 <MdDelete
                   className="absolute bottom-2 right-2 text-red-500 cursor-pointer hover:text-red-700 transition text-3xl lg:text-2xl"
                   onClick={() => handleDeleteComment(comment._id)}

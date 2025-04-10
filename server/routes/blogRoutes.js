@@ -12,7 +12,7 @@ blogRouter.delete('/delete/:id',authUser, deleteBlogs)
 
 
 blogRouter.get('/show-all-user-blog',showAllUserBlogs)
-blogRouter.get('/find-single-blog/:id',findBlogDetails)
+blogRouter.get('/find-single-blog/:id',authUser,findBlogDetails)
 
 
 module.exports = blogRouter;

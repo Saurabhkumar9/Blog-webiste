@@ -6,12 +6,18 @@
 // import { useNavigate } from "react-router-dom";
 // import { useAuth } from "../context/AuthContext";
 
+// const BASE_API_URL = import.meta.env.VITE_API_URL;
+
 // const Login = () => {
 //   const { login } = useAuth();
 //   const navigate = useNavigate();
 //   const [isSignup, setIsSignup] = useState(false);
 //   const [showPassword, setShowPassword] = useState(false);
 //   const [isForgotPassword, setIsForgotPassword] = useState(false);
+//   const [isEmailSent, setIsEmailSent] = useState(false);
+//   const [email, setEmail] = useState("");
+//   const [otp, setOtp] = useState("");
+//   const [isLoading, setIsLoading] = useState(false); // 👈 Loader state
 
 //   const {
 //     register,
@@ -21,17 +27,15 @@
 //   } = useForm();
 
 //   const onSubmit = async (data) => {
+//     setIsLoading(true);
 //     try {
 //       let response;
 
 //       if (isForgotPassword) {
-//         response = await axios.post(
-//           "http://localhost:4000/api/user/password-reset",
-//           {
-//             email: data.email,
-//             password: data.password,
-//           }
-//         );
+//         response = await axios.post(`${BASE_API_URL}/user/password-reset`, {
+//           email: data.email,
+//           password: data.password,
+//         });
 
 //         if (response.data.success) {
 //           reset();
@@ -42,39 +46,52 @@
 //         } else {
 //           toast.error(response.data.message || "Password reset failed");
 //         }
-//       } else if (isSignup) {
-//         response = await axios.post("http://localhost:4000/api/user/register", {
+//       } else if (isSignup && !isEmailSent) {
+//         response = await axios.post(`${BASE_API_URL}/user/register`, {
 //           name: data.name,
 //           email: data.email,
 //           password: data.password,
 //         });
+
 //         if (response.data.success) {
-//           toast.success(response.data.message || "Signup Successful!");
-//           reset();
-//           setTimeout(() => {
-//             setIsSignup(false);
-//           }, 2000);
+//           toast.success(response.data.message || "Email Sent. Please verify.");
+//           setIsEmailSent(true);
+//           setEmail(data.email);
 //         } else {
 //           toast.error(response.data.message || "Signup Failed!");
 //         }
+//       } else if (isSignup && isEmailSent) {
+//         response = await axios.post(`${BASE_API_URL}/user/verify-email`, {
+//           email,
+//           otp,
+//         });
+
+//         if (response.data.success) {
+//           toast.success("Email Verified! You can now login.");
+//           reset();
+//           setIsSignup(false);
+//           setIsEmailSent(false);
+//           setOtp("");
+//         } else {
+//           toast.error(response.data.message || "Invalid OTP");
+//         }
 //       } else {
-//         response = await axios.post("http://localhost:4000/api/user/login", {
+//         response = await axios.post(`${BASE_API_URL}/user/login`, {
 //           email: data.email,
 //           password: data.password,
 //         });
-//         if (response.data.success) {
-//           login(response.data.token); // Use the login function from AuthContext
-//           toast.success(response.data.message || "Login Successful!");
-//           reset();
-//           setTimeout(() => {
-//             navigate("/");
-//           }, 2000);
-//         } else {
-//           toast.error(response.data.message || "Login Failed!");
-//         }
+
+//         login(response.data.token);
+//         toast.success(response.data.message);
+//         reset();
+//         setTimeout(() => {
+//           navigate("/");
+//         }, 2000);
 //       }
 //     } catch (error) {
 //       toast.error(error.response?.data?.message || "Something went wrong!");
+//     } finally {
+//       setIsLoading(false); // 👈 End loader in all cases
 //     }
 //   };
 
@@ -85,14 +102,15 @@
 //           {isForgotPassword
 //             ? "Update Password"
 //             : isSignup
-//             ? "Sign Up"
+//             ? isEmailSent
+//               ? "Verify Email"
+//               : "Sign Up"
 //             : "Login"}
 //         </h2>
 
 //         {/* Form */}
 //         <form onSubmit={handleSubmit(onSubmit)}>
-//           {/* Name Field (Only for Signup) */}
-//           {isSignup && !isForgotPassword && (
+//           {isSignup && !isForgotPassword && !isEmailSent && (
 //             <div className="mb-4">
 //               <label className="block text-gray-600 text-sm mb-1">Name</label>
 //               <input
@@ -107,22 +125,22 @@
 //             </div>
 //           )}
 
-//           {/* Email Field */}
-//           <div className="mb-4">
-//             <label className="block text-gray-600 text-sm mb-1">Email</label>
-//             <input
-//               type="email"
-//               {...register("email", { required: true })}
-//               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-//               placeholder="Enter your email"
-//             />
-//             {errors.email && (
-//               <p className="text-red-500 text-sm mt-1">Email is required</p>
-//             )}
-//           </div>
+//           {!isEmailSent && (
+//             <div className="mb-4">
+//               <label className="block text-gray-600 text-sm mb-1">Email</label>
+//               <input
+//                 type="email"
+//                 {...register("email", { required: true })}
+//                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
+//                 placeholder="Enter your email"
+//               />
+//               {errors.email && (
+//                 <p className="text-red-500 text-sm mt-1">Email is required</p>
+//               )}
+//             </div>
+//           )}
 
-//           {/* Password Field */}
-//           {!isForgotPassword && (
+//           {!isForgotPassword && !isEmailSent && (
 //             <div className="mb-4 relative">
 //               <label className="block text-gray-600 text-sm mb-1">
 //                 Password
@@ -133,7 +151,6 @@
 //                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700 pr-10"
 //                 placeholder="Enter your password"
 //               />
-//               {/* Show/Hide Password Button */}
 //               <span
 //                 className="absolute right-3 top-10 cursor-pointer text-gray-500"
 //                 onClick={() => setShowPassword(!showPassword)}
@@ -148,69 +165,53 @@
 //             </div>
 //           )}
 
-//           {/* Update Password Field (Only for Forgot Password) */}
-//           {isForgotPassword && (
+//           {isEmailSent && (
 //             <div className="mb-4">
 //               <label className="block text-gray-600 text-sm mb-1">
-//                 New Password
+//                 Enter OTP
 //               </label>
 //               <input
-//                 type="password"
-//                 {...register("password", { required: true })}
+//                 type="text"
+//                 value={otp}
+//                 onChange={(e) => setOtp(e.target.value)}
 //                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-//                 placeholder="Enter new password"
+//                 placeholder="Enter OTP"
 //               />
-//               {errors.password && (
-//                 <p className="text-red-500 text-sm mt-1">
-//                   New password is required
-//                 </p>
-//               )}
 //             </div>
 //           )}
 
-//           {/* Submit Button */}
 //           <button
 //             type="submit"
-//             className="w-full py-2 rounded text-white font-semibold bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+//             disabled={isLoading}
+//             className={`w-full py-2 rounded text-white font-semibold ${
+//               isLoading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+//             } focus:outline-none focus:ring-2 focus:ring-blue-400`}
 //           >
-//             {isForgotPassword
+//             {isLoading
+//               ? "Please wait..."
+//               : isForgotPassword
 //               ? "Update Password"
 //               : isSignup
-//               ? "Sign Up"
+//               ? isEmailSent
+//                 ? "Verify Email"
+//                 : "Sign Up"
 //               : "Login"}
 //           </button>
 //         </form>
 
-//         {/* Links */}
 //         {!isForgotPassword && (
 //           <p className="text-sm text-gray-600 mt-4 text-center">
 //             {isSignup ? "Already have an account?" : "New user?"}{" "}
 //             <span
 //               className="text-blue-500 cursor-pointer hover:underline"
-//               onClick={() => setIsSignup(!isSignup)}
+//               onClick={() => {
+//                 setIsSignup(!isSignup);
+//                 setIsEmailSent(false);
+//                 setOtp("");
+//               }}
 //             >
 //               {isSignup ? "Login" : "Sign Up"}
 //             </span>
-//           </p>
-//         )}
-
-//         {/* Forgot Password Link */}
-//         {!isForgotPassword && !isSignup && (
-//           <p
-//             className="text-sm text-blue-500 mt-2 text-center cursor-pointer hover:underline"
-//             onClick={() => setIsForgotPassword(true)}
-//           >
-//             Forgot Password?
-//           </p>
-//         )}
-
-//         {/* Back to Login Link */}
-//         {isForgotPassword && (
-//           <p
-//             className="text-sm text-gray-600 mt-4 text-center cursor-pointer hover:underline"
-//             onClick={() => setIsForgotPassword(false)}
-//           >
-//             Back to Login
 //           </p>
 //         )}
 //       </div>
@@ -222,7 +223,6 @@
 
 
 
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -230,6 +230,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
   const { login } = useAuth();
@@ -240,6 +242,8 @@ const Login = () => {
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -249,52 +253,61 @@ const Login = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
     try {
       let response;
 
-      if (isForgotPassword) {
-        response = await axios.post(
-          "http://localhost:4000/api/user/password-reset",
-          {
-            email: data.email,
-            password: data.password,
-          }
-        );
+      if (isForgotPassword && !isEmailSent) {
+        response = await axios.post(`${BASE_API_URL}/user/send-reset-otp`, {
+          email: data.email,
+        });
 
         if (response.data.success) {
-          reset();
-          toast.success(response.data.message);
-          setTimeout(() => {
-            setIsForgotPassword(false);
-          }, 1000);
+          toast.success("OTP sent to your email.");
+          setIsEmailSent(true);
+          setEmail(data.email);
         } else {
-          toast.error(response.data.message || "Password reset failed");
+          toast.error(response.data.message || "Failed to send OTP.");
+        }
+      } else if (isForgotPassword && isEmailSent) {
+        response = await axios.post(`${BASE_API_URL}/user/password-reset`, {
+          email,
+          otp,
+          Password: newPassword,
+        });
+
+        if (response.data.success) {
+          toast.success(response.data.message || "Password reset successfully.");
+          reset();
+          setIsForgotPassword(false);
+          setIsEmailSent(false);
+          setOtp("");
+          setNewPassword("");
+        } else {
+          toast.error(response.data.message || "Invalid OTP or reset failed.");
         }
       } else if (isSignup && !isEmailSent) {
-        // Signup API
-        response = await axios.post("http://localhost:4000/api/user/register", {
+        response = await axios.post(`${BASE_API_URL}/user/register`, {
           name: data.name,
           email: data.email,
           password: data.password,
         });
 
         if (response.data.success) {
-          toast.success(response.data.message || "Email Sent. Please verify.");
+          toast.success("Email sent. Please verify.");
           setIsEmailSent(true);
-          setEmail(data.email); // Store email for verification
+          setEmail(data.email);
         } else {
-          toast.error(response.data.message || "Signup Failed!");
+          toast.error(response.data.message || "Signup failed.");
         }
       } else if (isSignup && isEmailSent) {
-        // Email verification API
-        response = await axios.post("http://localhost:4000/api/user/verify-email", {
+        response = await axios.post(`${BASE_API_URL}/user/verify-email`, {
           email,
           otp,
         });
 
         if (response.data.success) {
-
-          toast.success("Email Verified! You can now login.");
+          toast.success("Email verified! You can now login.");
           reset();
           setIsSignup(false);
           setIsEmailSent(false);
@@ -303,24 +316,22 @@ const Login = () => {
           toast.error(response.data.message || "Invalid OTP");
         }
       } else {
-        // Login API
-        response = await axios.post("http://localhost:4000/api/user/login", {
+        response = await axios.post(`${BASE_API_URL}/user/login`, {
           email: data.email,
           password: data.password,
         });
 
-          
-       
-          login(response.data.token);
-          toast.success(response.data.message)
-          reset();
-          setTimeout(() => {
-            navigate("/");
-          }, 2000);
-        
+        login(response.data.token);
+        toast.success("Login successful!");
+        reset();
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong!");
+      toast.error(error.response?.data?.message || "Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -329,7 +340,9 @@ const Login = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-semibold text-center mb-4">
           {isForgotPassword
-            ? "Update Password"
+            ? isEmailSent
+              ? "Verify OTP & Set Password"
+              : "Forgot Password"
             : isSignup
             ? isEmailSent
               ? "Verify Email"
@@ -337,68 +350,58 @@ const Login = () => {
             : "Login"}
         </h2>
 
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Name Field (Only for Signup) */}
-          {isSignup && !isForgotPassword && !isEmailSent && (
+          {/* Name */}
+          {isSignup && !isEmailSent && (
             <div className="mb-4">
               <label className="block text-gray-600 text-sm mb-1">Name</label>
               <input
                 type="text"
-                {...register("name", { required: isSignup })}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
+                {...register("name", { required: true })}
                 placeholder="Enter your name"
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700"
               />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">Name is required</p>
-              )}
+              {errors.name && <p className="text-red-500 text-sm">Name is required</p>}
             </div>
           )}
 
-          {/* Email Field */}
-          {!isEmailSent && (
+          {/* Email */}
+          {(!isEmailSent || isForgotPassword) && (
             <div className="mb-4">
               <label className="block text-gray-600 text-sm mb-1">Email</label>
               <input
                 type="email"
                 {...register("email", { required: true })}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
                 placeholder="Enter your email"
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700"
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">Email is required</p>
-              )}
+              {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
             </div>
           )}
 
-          {/* Password Field */}
-          {!isForgotPassword && !isEmailSent && (
+          {/* Password */}
+          {!isEmailSent && !isForgotPassword && (
             <div className="mb-4 relative">
-              <label className="block text-gray-600 text-sm mb-1">
-                Password
-              </label>
+              <label className="block text-gray-600 text-sm mb-1">Password</label>
               <input
                 type={showPassword ? "text" : "password"}
                 {...register("password", { required: true })}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700 pr-10"
                 placeholder="Enter your password"
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700 pr-10"
               />
-              {/* Show/Hide Password Button */}
               <span
-                className="absolute right-3 top-10 cursor-pointer text-gray-500"
+                className="absolute right-3 top-9 cursor-pointer text-gray-500"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </span>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  Password is required
-                </p>
+                <p className="text-red-500 text-sm">Password is required</p>
               )}
             </div>
           )}
 
-          {/* OTP Field (Only for Email Verification) */}
+          {/* OTP */}
           {isEmailSent && (
             <div className="mb-4">
               <label className="block text-gray-600 text-sm mb-1">Enter OTP</label>
@@ -406,19 +409,45 @@ const Login = () => {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
                 placeholder="Enter OTP"
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700"
               />
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* New Password for Forgot Password */}
+          {isForgotPassword && isEmailSent && (
+            <div className="mb-4 relative">
+              <label className="block text-gray-600 text-sm mb-1">New Password</label>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700 pr-10"
+              />
+              <span
+                className="absolute right-3 top-9 cursor-pointer text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </span>
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full py-2 rounded text-white font-semibold bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            disabled={isLoading}
+            className={`w-full py-2 rounded text-white font-semibold ${
+              isLoading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+            }`}
           >
-            {isForgotPassword
-              ? "Update Password"
+            {isLoading
+              ? "Please wait..."
+              : isForgotPassword
+              ? isEmailSent
+                ? "Reset Password"
+                : "Send OTP"
               : isSignup
               ? isEmailSent
                 ? "Verify Email"
@@ -428,21 +457,42 @@ const Login = () => {
         </form>
 
         {/* Links */}
-        {!isForgotPassword && (
-          <p className="text-sm text-gray-600 mt-4 text-center">
-            {isSignup ? "Already have an account?" : "New user?"}{" "}
-            <span
-              className="text-blue-500 cursor-pointer hover:underline"
-              onClick={() => {
-                setIsSignup(!isSignup);
-                setIsEmailSent(false);
-                setOtp("");
-              }}
-            >
-              {isSignup ? "Login" : "Sign Up"}
-            </span>
-          </p>
-        )}
+        <div className="mt-4 text-sm text-center text-gray-600">
+          {!isForgotPassword && (
+            <p>
+              {isSignup ? "Already have an account?" : "New user?"}{" "}
+              <span
+                className="text-blue-500 cursor-pointer hover:underline"
+                onClick={() => {
+                  setIsSignup(!isSignup);
+                  setIsEmailSent(false);
+                  setOtp("");
+                  reset();
+                }}
+              >
+                {isSignup ? "Login" : "Sign Up"}
+              </span>
+            </p>
+          )}
+
+          {!isSignup && !isForgotPassword && (
+            <p className="mt-2">
+              Forgot password?{" "}
+              <span
+                className="text-blue-500 cursor-pointer hover:underline"
+                onClick={() => {
+                  setIsForgotPassword(true);
+                  setIsSignup(false);
+                  setIsEmailSent(false);
+                  setOtp("");
+                  reset();
+                }}
+              >
+                Reset
+              </span>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

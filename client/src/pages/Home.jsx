@@ -3,12 +3,12 @@ import BlogCard from "../components/BlogCard";
 import axios from 'axios'
 const Home = () => {
   const [blogs, setBlogs] = useState([]);
-
+  const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const fetchAllBlogUser=async()=>{
   try {
     
-    const response=await axios.get('http://localhost:4000/api/user/show-all-user-blog')
+    const response=await axios.get(`${BASE_API_URL}/user/show-all-user-blog`)
     
     if(response.data.success){
       setBlogs(response.data.showAllBlogs)

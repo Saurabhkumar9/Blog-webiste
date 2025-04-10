@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BlogCard from "../components/BlogCard";
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const AllBlogs = () => {
+ 
+
   const [allBlogs, setAllBlogs] = useState([]); 
   const [category, setCategory] = useState("All");
 
   const fetchAllBlogUser = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/user/show-all-user-blog");
+      const response = await axios.get(`${BASE_API_URL}/user/show-all-user-blog`);
       if (response.data.success) {
         setAllBlogs(response.data.showAllBlogs);
       }
-      console.log(response.data);
+      
     } catch (error) {
-      console.error("Error fetching blogs:", error);
+      // console.error("Error fetching blogs:", error);
     }
   };
 

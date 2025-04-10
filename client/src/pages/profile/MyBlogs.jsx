@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const MyBlogs = () => {
   const { sendToken } = useAuth();
@@ -12,7 +13,7 @@ const MyBlogs = () => {
 
   const fetchBlogs = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/user/show-blog", {
+      const response = await axios.get(`${BASE_API_URL}/user/show-blog`, {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },
@@ -22,7 +23,7 @@ const MyBlogs = () => {
         setBlogs(response.data.showBlog);
       }
     } catch (error) {
-      console.log(error.response.data.message);
+      // console.log(error.response.data.message);
     }
   };
 
@@ -36,7 +37,7 @@ const MyBlogs = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await axios.delete(`http://localhost:4000/api/user/delete/${id}`, {
+      const response = await axios.delete(`${BASE_API_URL}/user/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },
