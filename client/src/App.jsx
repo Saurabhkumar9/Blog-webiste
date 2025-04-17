@@ -3,7 +3,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/Navbar";
 import { Route, Routes } from "react-router-dom";
-import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import AddblogCategory from "./pages/profile/AddblogCategory";
@@ -17,6 +16,7 @@ import DeatilsBlog from "./pages/DeatilsBlog";
 import Login from "./pages/Login";
 import Profile from "./pages/profile/Profile";
 import UserPage from "./pages/UserPage";
+import About from './pages/About'
 
 const App = () => {
   return (
@@ -46,11 +46,12 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/user" element={<UserPage/>}/>
+            <Route path="/about" element={<About/>}/>
           </Routes>
         </div>
       </div>
 
-      <Footer />
+      
     </>
   );
 };

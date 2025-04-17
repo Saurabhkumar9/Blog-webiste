@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/logo.png";
 
 const BlogCard = ({ blog }) => {
   const { isLogin } = useAuth();  
@@ -13,7 +14,7 @@ const BlogCard = ({ blog }) => {
     >
       <div className="bg-white shadow-md rounded-lg overflow-hidden transition-transform hover:scale-105">
         <img
-          src={blog.image}
+          src={blog.image  || logo}
           alt={blog.title}
           className="w-full h-40 sm:h-48 object-cover"
         />

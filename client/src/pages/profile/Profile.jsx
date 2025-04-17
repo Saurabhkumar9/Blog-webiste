@@ -7,6 +7,7 @@ import { FaCamera, FaTimes, FaCheck } from "react-icons/fa";
 const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const Profile = () => {
+  const { logout } = useAuth();
   const [avatar, setAvatar] = useState("/default-avatar.png");
   const [previewAvatar, setPreviewAvatar] = useState(null); // New state for preview
   const fileInputRef = useRef(null);
@@ -26,6 +27,11 @@ const Profile = () => {
   const onSubmit = async (data) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+    if (!data.bio && !selectedFile) {
+      alert("require atlest one(Name, Bio, or Avatar).");
+      setIsSubmitting(false);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", data.name);
@@ -50,7 +56,7 @@ const Profile = () => {
       if (response.data.success) {
         toast.success(response.data.message);
         setAvatar(response.data.data.avatar || "/default-avatar.png");
-        setPreviewAvatar(null); 
+        setPreviewAvatar(null);
         setIconUrl(response.data.data.avatar || "/default-avatar.png");
         getUser();
         reset();
@@ -64,32 +70,29 @@ const Profile = () => {
 
   const getUser = async () => {
     try {
-      const response = await axios.get(
-        `${BASE_API_URL}/user/show/profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_API_URL}/user/show/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.data.success) {
         setUserData(response.data.user);
         setValue("name", response.data.user.name);
-        setValue( response.data.user.bio || "");
+        setValue(response.data.user.bio || "");
         setIconUrl(response.data.user.avatar);
         setAvatar(response.data.user.avatar || "/default-avatar.png");
         setFollower(response.data.user.followers);
         setFollowing(response.data.user.following);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch user data");
+      // toast.error(error.response?.data?.message || "Failed to fetch user data");
     }
   };
 
   useEffect(() => {
     getUser();
-  }, [avatar,userData]);
+  }, [avatar, userData]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -121,7 +124,9 @@ const Profile = () => {
       const context = canvasRef.current.getContext("2d");
       context.drawImage(videoRef.current, 0, 0, 200, 200);
       canvasRef.current.toBlob((blob) => {
-        const file = new File([blob], "captured-image.jpg", { type: "image/jpeg" });
+        const file = new File([blob], "captured-image.jpg", {
+          type: "image/jpeg",
+        });
         setSelectedFile(file);
         setPreviewAvatar(URL.createObjectURL(blob)); // Set preview only
         stopCamera();
@@ -141,6 +146,11 @@ const Profile = () => {
     setSelectedFile(null);
   };
 
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      logout();
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 p-4">
       <div className="w-full max-w-4xl bg-white p-6 md:p-8 rounded-xl shadow-md flex flex-col md:flex-row gap-6 md:gap-8">
@@ -279,6 +289,13 @@ const Profile = () => {
               {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
           </form>
+
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-600 text-white py-2 text-base font-medium rounded-md hover:red-700 transition duration-300 mt-4"
+          >
+            Log Out
+          </button>
         </div>
       </div>
     </div>

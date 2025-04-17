@@ -6,17 +6,20 @@ import {
   FaLinkedinIn,
   FaInstagram,
 } from "react-icons/fa";
+import logo from "../assets/logo.png";
 
 const Footer = () => {
   return (
-    <footer className="bg-slate-200 lg:bg-gray-900 text-gray-700 lg:text-gray-300 py-8 px-4 sm:px-6">
-      {/* Footer Content (Visible on lg screens) */}
-      <div className="container mx-auto hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="w-full bg-white lg:bg-gray-900 text-gray-800 lg:text-gray-300 py-10 px-4 sm:px-6">
+      {/* -------- Desktop / Laptop Footer -------- */}
+      <div className="hidden lg:grid container mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
         {/* Branding & About */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900 lg:text-white">
-            LikhoIndia
-          </h2>
+        <div className="space-y-3">
+          <img
+            src={logo}
+            alt="logo"
+            className="h-20 w-40 object-contain rounded-sm bg-white"
+          />
           <p className="text-sm text-gray-600 lg:text-gray-400">
             LikhoIndia 2025 - Empowering voices through blogging. Join us to
             share and explore stories that matter.
@@ -25,48 +28,31 @@ const Footer = () => {
 
         {/* Social Media */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 lg:text-white mb-4">
-            Follow Us
-          </h3>
-          <div className="flex space-x-4">
-            <a
-              href="#"
-              className="p-2 bg-gray-300 lg:bg-gray-700 rounded-full hover:bg-blue-500 transition-colors"
-            >
-              <FaFacebookF size={18} />
-            </a>
-            <a
-              href="#"
-              className="p-2 bg-gray-300 lg:bg-gray-700 rounded-full hover:bg-blue-400 transition-colors"
-            >
-              <FaTwitter size={18} />
-            </a>
-            <a
-              href="#"
-              className="p-2 bg-gray-300 lg:bg-gray-700 rounded-full hover:bg-red-500 transition-colors"
-            >
-              <FaYoutube size={18} />
-            </a>
-            <a
-              href="#"
-              className="p-2 bg-gray-300 lg:bg-gray-700 rounded-full hover:bg-blue-600 transition-colors"
-            >
-              <FaLinkedinIn size={18} />
-            </a>
-            <a
-              href="#"
-              className="p-2 bg-gray-300 lg:bg-gray-700 rounded-full hover:bg-pink-500 transition-colors"
-            >
-              <FaInstagram size={18} />
-            </a>
-          </div>
+         
+        </div>
+
+        {/* Quick Links */}
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li>
+              <a href="about" className="hover:text-blue-500 transition">
+                About Us
+              </a>
+            </li>
+            <li>
+              
+            </li>
+          </ul>
+        </div>
+
+        {/* Subscribe Section (Laptop/Desktop) */}
+        <div>
+          
         </div>
       </div>
 
-      {/* Copyright Section (Visible on all screens) */}
-      <div className="text-center mt-8 text-sm border-t border-gray-300 lg:border-gray-700 pt-4">
-        &copy; 2025 LikhoIndia. All Rights Reserved.
-      </div>
+    
     </footer>
   );
 };

@@ -1,96 +1,110 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useForm } from "react-hook-form";
+import { useAuth } from "../../context/AuthContext";
+
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const Notification = () => {
-  // ✅ लॉगिन किया हुआ यूज़र
-  const loggedInUser = "Rahul Sharma"; // Example Logged-in User
+  const { sendToken } = useAuth();
+  const [rating, setRating] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const { register, handleSubmit, reset } = useForm();
 
-  // ✅ यूज़र की फॉलो लिस्ट
-  const followingAuthors = ["John Doe", "Alice Smith"];
+  const onSubmit = async (data) => {
+    const newReview = { rating: rating, comment: data.review };
 
-  // ✅ यूज़र के लाइक किए हुए ब्लॉग्स
-  const likedBlogs = [2, 4]; // IDs of liked blogs
+    try {
+      const response = await axios.post(
+        `${BASE_API_URL}/user/add-review`,
+        newReview,
+        {
+          headers: {
+            Authorization: `Bearer ${sendToken}`,
+          },
+        }
+      );
 
-  // ✅ Sample Blog Data
-  const allBlogs = [
-    {
-      id: 1,
-      title: "React Best Practices",
-      author: "John Doe",
-      category: "Web Development",
-      description: "Learn the best practices to write clean React code.",
-      date: "March 5, 2025",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 2,
-      title: "AI in Education",
-      author: "Alice Smith",
-      category: "Artificial Intelligence",
-      description: "How AI is transforming the education sector.",
-      date: "March 1, 2025",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 3,
-      title: "JavaScript ES6 Features",
-      author: "Robert Brown",
-      category: "Web Development",
-      description: "Explore the new features introduced in ES6.",
-      date: "March 10, 2025",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      title: "Future of AI",
-      author: "Alice Smith",
-      category: "Artificial Intelligence",
-      description: "What the future holds for AI and machine learning.",
-      date: "March 12, 2025",
-      image: "https://via.placeholder.com/150",
-    },
-  ];
-
-  // 🔍 फ़िल्टर करें फॉलो किए गए Authors के नए ब्लॉग्स
-  const followingNotifications = allBlogs.filter((blog) =>
-    followingAuthors.includes(blog.author)
-  );
-
-  // 🔍 फ़िल्टर करें यूज़र द्वारा लाइक किए गए ब्लॉग्स के अपडेट्स
-  const likedBlogNotifications = allBlogs.filter((blog) =>
-    likedBlogs.includes(blog.id)
-  );
+      if (response.data.success) {
+        alert(response.data.message)
+        setSubmitted(true);
+        reset();
+        setRating(0);
+        setTimeout(() => setSubmitted(false), 3000);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "some thing went wrong");
+    }
+  };
 
   return (
-    <div className="p-4">
+    <div className="p-4 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-6">Notifications</h1>
-      
-      {/* 📢 Followed Authors' New Blogs */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">New Blogs from Followed Authors</h2>
-        {followingNotifications.length > 0 ? (
-          followingNotifications.map((blog) => (
-            <div key={blog.id} className="p-4 border rounded-md mb-2 bg-gray-100">
-              <p className="font-bold">{blog.author} posted a new blog:</p>
-              <p>{blog.title}</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">No new blogs from followed authors.</p>
-        )}
+
+      <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-8">
+        <h2 className="font-bold text-lg mb-2">Feature Coming Soon!</h2>
+        <p>We're currently working on an enhanced notification system:</p>
+        <ul className="list-disc pl-5 mt-2">
+          <li>New blogs from authors you follow</li>
+          <li>Updates on blogs you've liked</li>
+          <li>Comments on your posts</li>
+          <li>Personalized recommendations</li>
+        </ul>
+        <p className="mt-2">Stay tuned for this exciting update!</p>
       </div>
 
-      {/* ❤️ Liked Blog Updates */}
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Updates on Your Liked Blogs</h2>
-        {likedBlogNotifications.length > 0 ? (
-          likedBlogNotifications.map((blog) => (
-            <div key={blog.id} className="p-4 border rounded-md mb-2 bg-gray-100">
-              <p className="font-bold">{blog.title} has new updates!</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">No updates on your liked blogs.</p>
-        )}
+      {/* Review Section */}
+      <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+        <h2 className="text-lg font-semibold mb-2">Leave a Review</h2>
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Star Rating */}
+          <div className="flex items-center mb-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                className={`text-2xl ${
+                  star <= rating ? "text-yellow-500" : "text-gray-300"
+                }`}
+                onClick={() => setRating(star)}
+              >
+                ★
+              </button>
+            ))}
+            <span className="ml-2 text-gray-600">
+              {rating > 0 ? `${rating} star${rating > 1 ? "s" : ""}` : ""}
+            </span>
+          </div>
+
+          {/* Review Input */}
+          <div className="mb-4">
+            <label htmlFor="review" className="block mb-2 font-medium">
+              Your Feedback
+            </label>
+            <textarea
+              id="review"
+              {...register("review", { required: true })}
+              rows="4"
+              className="w-full p-2 border rounded mb-4 bg-white text-black"
+              placeholder="What features would you like to see in notifications?"
+            ></textarea>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            disabled={rating === 0}
+          >
+            Submit Review
+          </button>
+
+          {/* Submission Message */}
+          {submitted && (
+            <p className="mt-2 text-green-600">Thank you for your feedback!</p>
+          )}
+        </form>
       </div>
     </div>
   );

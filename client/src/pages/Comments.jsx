@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+
 const BASE_API_URL = import.meta.env.VITE_API_URL;
 const Comments = () => {
+  const { sendToken } = useAuth()
   const { id } = useParams();
   const [comments, setComments] = useState([]);
 
   const showDetails = async () => {
     try {
       const response = await axios.get(
-        `${BASE_API_URL}/user/find-single-blog/${id}`
-      );
-      // console.log(response.data);
+        `${BASE_API_URL}/user/find-single-blog/${id}`,{headers: {
+          Authorization: `Bearer ${sendToken}`,
+        },
+    });
+      console.log(response.data);
       if (response.data.success) {
         setComments(response.data.findBlog.comments);
       }

@@ -8,6 +8,8 @@ const blogRouter = require("./routes/blogRoutes");
 const commmentRouter = require("./routes/commentRouter");
 const likeRouter = require("./routes/likeRouter");
 const followRouter = require("./routes/followRoute");
+const reviewRouter = require("./routes/reviewRouter");
+const { getAllReviews } = require("./controllers/reviewController");
 
 dotenv.config();
 
@@ -15,11 +17,11 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-  })
-);
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 
 dbConnection();
 
@@ -41,6 +43,9 @@ app.use('/api/user',likeRouter)
 
 
 app.use('/api/user', followRouter)
+app.use('/api/user', reviewRouter)
+
+app.get("/" ,getAllReviews)
 
 // Global Error Handler
 app.use((err, req, res, next) => {

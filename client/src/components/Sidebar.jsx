@@ -7,10 +7,11 @@ import { FaUserGroup } from "react-icons/fa6";
 import { TbWritingSignOff } from "react-icons/tb";
 import { BiCategory } from "react-icons/bi";
 import { RiUserCommunityLine } from "react-icons/ri";
+import { FcAbout } from "react-icons/fc";
 
 const Sidebar = ({ closeSidebar }) => {
   const { isLogin } = useAuth();
-
+  
   return (
     <div className="fixed inset-y-0 left-0 w-64 bg-gray-200 h-screen z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-0">
       <div className="p-3 sm:p-4">
@@ -56,7 +57,7 @@ const Sidebar = ({ closeSidebar }) => {
                     className="flex items-center gap-2 text-sm sm:text-base"
                   >
                     <FaUserGroup size={16} />
-                  Users
+                    Users
                   </Link>
                   <Link
                     to="/following"
@@ -72,15 +73,15 @@ const Sidebar = ({ closeSidebar }) => {
                     className="flex items-center gap-2 text-sm sm:text-base"
                   >
                     <BiCategory size={16} />
-                     My Categories 
+                    My Categories
                   </Link>
                   <Link
                     to="/create-blog"
                     onClick={closeSidebar}
                     className="flex items-center gap-2 text-sm sm:text-base"
                   >
-                    < TbWritingSignOff size={16} />
-                     Write Blog
+                    <TbWritingSignOff size={16} />
+                    Write Blog
                   </Link>
                   <Link
                     to="/your-blogs"
@@ -88,7 +89,7 @@ const Sidebar = ({ closeSidebar }) => {
                     className="flex items-center gap-2 text-sm sm:text-base"
                   >
                     <FaBook size={16} />
-                      My Blogs
+                    My Blogs
                   </Link>
                   <Link
                     to="/notification"
@@ -96,8 +97,17 @@ const Sidebar = ({ closeSidebar }) => {
                     className="flex items-center gap-2 text-sm sm:text-base"
                   >
                     <IoMdNotifications size={16} />
-                     Notifications
+                    Notifications
                   </Link>
+                  <Link
+                    to="/about"
+                    onClick={closeSidebar}
+                    className="flex items-center gap-2 text-sm sm:text-base"
+                  >
+                    <FcAbout className="text-black" size={16} />
+                    About
+                  </Link>
+                  
                 </div>
               </div>
             </>

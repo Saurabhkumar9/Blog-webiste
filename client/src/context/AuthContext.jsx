@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
-
+import axios from "axios";
+const BASE_API_URL = import.meta.env.VITE_API_URL;
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
-
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
@@ -11,25 +11,19 @@ export const AuthProvider = ({ children }) => {
   const [iconUrl, setIconUrl] = useState("");
   const [token, setToken] = useState("");
 
-
   // Check localStorage for token on initial load
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       setIsLogin(true);
       setToken(storedToken);
-    
-      
     }
   }, []);
 
-
   const login = (token) => {
-  
     localStorage.setItem("token", token);
     setToken(token);
     setIsLogin(true);
-    
   };
 
   const logout = () => {
@@ -43,10 +37,28 @@ export const AuthProvider = ({ children }) => {
     }, 1000);
   };
 
+  const getUser = async () => {
+    try {
+      const response = await axios.get(`${BASE_API_URL}/user/show/profile`, {
+        headers: {
+          Authorization: `Bearer ${sendToken}`,
+        },
+      });
 
- 
-  const sendToken=localStorage.getItem('token')
-  
+      if (response.data.success) {
+        setIconUrl(response.data.user.avatar);
+      }
+    } catch (error) {
+      // toast.error(error.response?.data?.message || "Failed to fetch user data");
+    }
+  };
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  const sendToken = localStorage.getItem("token");
+
   return (
     <AuthContext.Provider
       value={{
@@ -57,7 +69,7 @@ export const AuthProvider = ({ children }) => {
         token,
         login,
         logout,
-        sendToken
+        sendToken,
       }}
     >
       {children}
@@ -68,4 +80,3 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
-

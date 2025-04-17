@@ -4,12 +4,15 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 const BASE_API_URL = import.meta.env.VITE_API_URL;
+import logo from "../../assets/logo.png";
+
 
 const MyBlogs = () => {
   const { sendToken } = useAuth();
   const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [expandedBlogs, setExpandedBlogs] = useState({});
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const fetchBlogs = async () => {
     try {
@@ -23,7 +26,7 @@ const MyBlogs = () => {
         setBlogs(response.data.showBlog);
       }
     } catch (error) {
-      // console.log(error.response.data.message);
+      
     }
   };
 
@@ -35,6 +38,8 @@ const MyBlogs = () => {
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this blog?");
     if (!confirmDelete) return;
+
+    setLoading(true); 
 
     try {
       const response = await axios.delete(`${BASE_API_URL}/user/delete/${id}`, {
@@ -50,6 +55,8 @@ const MyBlogs = () => {
     } catch (error) {
       console.error("Delete error:", error.response?.data?.message || error.message);
       toast.error(error.response.data.message);
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -69,7 +76,7 @@ const MyBlogs = () => {
             >
               {/* Blog Image */}
               <img
-                src={blog.image}
+                src={blog.image  || logo}
                 alt="Blog"
                 className="w-full h-40 object-cover rounded-md"
               />
@@ -103,10 +110,13 @@ const MyBlogs = () => {
               {/* Buttons */}
               <div className="flex justify-between mt-3">
                 <button
-                  className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                  className={`px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   onClick={() => handleDelete(blog._id)}
+                  disabled={loading} // Disable the button while loading
                 >
-                  Delete
+                  {loading ? "Deleting..." : "Delete"} {/* Show loader text */}
                 </button>
 
                 <button

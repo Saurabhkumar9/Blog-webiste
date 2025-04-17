@@ -16,7 +16,7 @@ const fetchAllBlogUser=async()=>{
     }
 
   } catch (error) {
-    console.log(error.response.data)
+    // console.log(error.response.data)
   }
 }
 
@@ -36,21 +36,21 @@ useEffect(()=>{
       <section className="mb-10">
         <h2 className="lg:text-2xl text:sm font-bold text-gray-700 mb-4">Latest Blogs</h2>
         <div className="flex flex-wrap -mx-4">
-          {blogs.slice(0, 4).map((blog) => (
+          {blogs.slice(0, 25).map((blog) => (
             <BlogCard key={blog.id} blog={blog}  />
           ))}
         </div>
       </section>
 
       {/* Popular Blogs Section */}
-      <section>
+      {/* <section>
         <h2 className="lg:text-2xl text-sm font-bold text-gray-700 mb-4">Popular Blogs</h2>
         <div className="flex flex-wrap -mx-4">
           {blogs.slice(4, 8).map((blog) => (
             <BlogCard key={blog.id}  blog={blog} />
           ))}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };

@@ -11,31 +11,32 @@ const createBlog = async (req, res, next) => {
   try {
     const { title, description, content, categoryName } = req.body;
 
+    // Validate required fields
     if (!title || !description || !content) {
       return next(handleErrors(400, "All fields are required"));
     }
 
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Image file is required!",
-      });
-    }
     const userId = req.user.id;
 
     const findUser = await User.findById(userId);
 
-    const imageUrl = req.file.path;
-    const publicId = req.file.filename;
+    let imageUrl = null;
+    let publicId = null;
+
+    // Check if an image was uploaded
+    if (req.file) {
+      imageUrl = req.file.path;
+      publicId = req.file.filename;
+    }
 
     const newBlog = new Blog({
       title,
       description,
       content,
       categoryName,
-      image: imageUrl,
+      image: imageUrl, // Save image URL only if provided
       author: findUser.name,
-      imagePublicId: publicId,
+      imagePublicId: publicId, // Save image PublicId only if provided
       userId: req.user.id,
     });
 
@@ -72,6 +73,7 @@ const showBlog = async (req, res, next) => {
   }
 };
 
+
 const deleteBlogs = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -82,6 +84,7 @@ const deleteBlogs = async (req, res, next) => {
     if (!findBlog) {
       return next(handleErrors(404, "Blog not found"));
     }
+
     const userIdString = findBlog.userId.toString();
 
     if (userIdString !== userId) {
@@ -92,17 +95,27 @@ const deleteBlogs = async (req, res, next) => {
 
     const publicId = findBlog.imagePublicId;
 
-    const cloudinaryResponse = await cloudinary.uploader.destroy(publicId);
+    // If the blog has an associated image, delete it from Cloudinary
+    if (publicId) {
+      const cloudinaryResponse = await cloudinary.uploader.destroy(publicId);
 
-    if (cloudinaryResponse.result !== "ok") {
-      console.log("Error: Image not found in Cloudinary!");
+      if (cloudinaryResponse.result !== "ok") {
+        console.log("Error: Image not found in Cloudinary!");
+      }
     }
 
+    // Delete all related comments for the blog
+    await Comment.deleteMany({ BlogId: id });
+
+    // Delete all related likes for the blog
+    await Like.deleteMany({ Blog: id });
+
+    // Finally, delete the blog
     await Blog.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,
-      message: "Blog and its image deleted successfully",
+      message: "Blog and its image, comments, and likes deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting blog:", error);

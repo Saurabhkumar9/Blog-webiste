@@ -12,6 +12,8 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import logo from "../assets/logo.png";
+
 const BASE_API_URL = import.meta.env.VITE_API_URL;
 
 const DetailsBlog = () => {
@@ -115,7 +117,7 @@ const DetailsBlog = () => {
       {/* Blog Image */}
       <div className="w-full h-64 overflow-hidden rounded-md">
         <img
-          src={details.image}
+          src={details.image  || logo}
           alt="Blog Cover"
           className="w-full h-full object-cover"
         />
