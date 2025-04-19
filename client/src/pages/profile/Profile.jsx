@@ -52,7 +52,7 @@ const Profile = () => {
           },
         }
       );
-
+        console.log(response.data)
       if (response.data.success) {
         toast.success(response.data.message);
         setAvatar(response.data.data.avatar || "/default-avatar.png");
@@ -62,6 +62,7 @@ const Profile = () => {
         reset();
       }
     } catch (error) {
+      console.log("error",error)
       toast.error(error.response?.data?.message || "Something went wrong!");
     } finally {
       setIsSubmitting(false);
