@@ -7,28 +7,35 @@ const Comment = require("../models/comment.model");
 const Like = require("../models/like.model");
 const fs = require("fs");
 
+
+
 const createBlog = async (req, res, next) => {
   try {
     const { title, description, content, categoryName } = req.body;
 
-    // Validate required fields
     if (!title || !description || !content) {
       return next(handleErrors(400, "All fields are required"));
     }
 
     const userId = req.user.id;
 
+    
     const findUser = await User.findById(userId);
+    if (!findUser) {
+      return next(handleErrors(404, "User not found"));
+    }
 
     let imageUrl = null;
     let publicId = null;
 
-    // Check if an image was uploaded
+   
     if (req.file) {
-      imageUrl = req.file.path;
-      publicId = req.file.filename;
+      // Assuming Cloudinary is configured and integrated
+      imageUrl = req.file.path;  // Cloudinary image URL
+      publicId = req.file.filename; // Cloudinary public ID (unique ID for the uploaded image)
     }
 
+    // Create a new blog post
     const newBlog = new Blog({
       title,
       description,
@@ -40,8 +47,10 @@ const createBlog = async (req, res, next) => {
       userId: req.user.id,
     });
 
+    // Save the blog to the database
     await newBlog.save();
 
+    // Return the response with success status and blog data
     return res.status(201).json({
       success: true,
       message: "Blog added successfully!",
@@ -49,11 +58,14 @@ const createBlog = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error adding blog:", error);
+    // Handle server errors
     return next(
       handleErrors(500, "Internal Server Error. Please try again later.")
     );
   }
 };
+
+
 
 // show blogs
 

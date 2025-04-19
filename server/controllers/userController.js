@@ -174,60 +174,6 @@ const showAllUser=async(req,res,next)=>{
 
 
 
-const updateProfile = async (req, res, next) => {
-  try {
-    const { name, bio } = req.body;
-
-    if (!name) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please provide name and bio." });
-    }
-
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    let imageUrl = user.avatar;
-    let publicId = user.avatarPublicId;
-    // console.log(publicId);
-
-    if (req.file) {
-      if (user.avatarPublicId) {
-        await cloudinary.uploader.destroy(user.avatarPublicId);
-      }
-
-      imageUrl = req.file.path;
-      publicId = req.file.filename;
-    }
-
-    user.name = name;
-    if(bio){
-      user.bio = bio;
-    }
-    user.avatar = imageUrl;
-    user.avatarPublicId = publicId;
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      data: {
-        name: user.name,
-        bio: user.bio,
-        avatar: user.avatar,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 const sendResetOTP = async (req, res, next) => {
   try {
@@ -302,6 +248,65 @@ const resetPasswordWithOTP = async (req, res, next) => {
   }
 };
 
+
+
+
+
+
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, bio } = req.body;
+
+    if (!name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide name and bio." });
+    }
+
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    let imageUrl = user.avatar;
+    let publicId = user.avatarPublicId;
+
+    if (req.file) {
+      
+      if (user.avatarPublicId) {
+        await cloudinary.uploader.destroy(user.avatarPublicId);
+      }
+
+      imageUrl = req.file.path; 
+      publicId = req.file.filename; 
+    }
+
+    user.name = name;
+    if (bio) {
+      user.bio = bio;
+    }
+    user.avatar = imageUrl;
+    user.avatarPublicId = publicId;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        name: user.name,
+        bio: user.bio,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 module.exports = {
