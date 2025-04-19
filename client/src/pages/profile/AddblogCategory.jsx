@@ -84,8 +84,10 @@ const AddblogCategory = () => {
       }
     } catch (error) {
       toast.error(error.response.data.message);
+      console.log(error)
       reset({ categoryName: "" });
       setSlug("");
+
     }
   };
 
