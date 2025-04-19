@@ -3,52 +3,42 @@ import { FiUserPlus, FiUserCheck, FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import userImg from '../assets/user.jpg'
 const BASE_API_URL = import.meta.env.VITE_API_URL;
 
+
 const UserPage = () => {
-  
   const { sendToken } = useAuth();
-  console.log(sendToken)
   const [search, setSearch] = useState("");
   const [following, setFollowing] = useState([]);
   const [followers, setFollowers] = useState([]);
-  const [users, setUsers] = useState([]); // All users
+  const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedImage, setSelectedImage] = useState(null); // 👈 New state
 
-  // Fetch all users
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(
-        `${BASE_API_URL}/user/show/user`,
-        {
-          headers: { Authorization: `Bearer ${sendToken}` },
-        }
-      );
+      const response = await axios.get(`${BASE_API_URL}/user/show/user`, {
+        headers: { Authorization: `Bearer ${sendToken}` },
+      });
       setUsers(response.data.findUser);
     } catch (error) {
       toast.error(error.response?.data?.message || "Error fetching users");
     }
   };
 
-  // Fetch following users (whom I follow)
   const fetchFollowing = async () => {
     try {
-      const response = await axios.get(
-        `${BASE_API_URL}/user/fetch/follow`,
-        {
-          headers: { Authorization: `Bearer ${sendToken}` },
-        }
-      );
+      const response = await axios.get(`${BASE_API_URL}/user/fetch/follow`, {
+        headers: { Authorization: `Bearer ${sendToken}` },
+      });
       const followingIds = response.data.showFollower.map(
         (follow) => follow.followingId
       );
       setFollowing(followingIds);
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   };
 
-  // Fetch followers (who follow me)
   const fetchFollowers = async () => {
     try {
       const response = await axios.get(
@@ -57,10 +47,8 @@ const UserPage = () => {
           headers: { Authorization: `Bearer ${sendToken}` },
         }
       );
-      console.log("folling", response.data.followers);
       setFollowers(response.data.followers);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -69,7 +57,6 @@ const UserPage = () => {
     fetchFollowers();
   }, []);
 
-  // Handle follow action
   const handleFollow = async (userId) => {
     try {
       const response = await axios.post(
@@ -86,7 +73,6 @@ const UserPage = () => {
     }
   };
 
-  // Handle unfollow action
   const handleUnfollow = async (userId) => {
     try {
       const response = await axios.post(
@@ -117,7 +103,7 @@ const UserPage = () => {
         <FiSearch className="absolute left-3 top-3 text-gray-500" />
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Tabs */}
       <div className="flex space-x-4 mb-4">
         <button
           className={`px-2 py-1 rounded-md ${
@@ -151,7 +137,7 @@ const UserPage = () => {
         </button>
       </div>
 
-      {/* Conditional Rendering Based on Active Tab */}
+      {/* All Users */}
       {activeTab === "all" && (
         <div className="border border-gray-300 rounded-md p-3 max-h-[400px] overflow-y-auto">
           <h2 className="text-lg font-bold mb-3">Users</h2>
@@ -165,15 +151,15 @@ const UserPage = () => {
                 className="flex items-center justify-between p-3 bg-white shadow-md rounded-lg mb-2"
               >
                 <div className="flex items-center space-x-3">
+              
                   <img
-                    src={user.avatar}
+                    src={user.avatar   || userImg}
                     alt={user.name}
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                    onClick={() => setSelectedImage(user.avatar || userImg)} // 👈 Click to enlarge
                   />
                   <h4 className="text-lg font-semibold">{user.name}</h4>
                 </div>
-
-                {/* Follow/Unfollow Button */}
                 {following.includes(user._id) ? (
                   <FiUserCheck
                     onClick={() => handleUnfollow(user._id)}
@@ -190,6 +176,7 @@ const UserPage = () => {
         </div>
       )}
 
+      {/* Following */}
       {activeTab === "following" && (
         <div className="border border-gray-300 rounded-md p-3 max-h-[400px] overflow-y-auto">
           <h2 className="text-lg font-bold mb-3">Following</h2>
@@ -202,14 +189,13 @@ const UserPage = () => {
               >
                 <div className="flex items-center space-x-3">
                   <img
-                    src={user.avatar}
+                    src={user.avatar || userImg}
                     alt={user.name}
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                    onClick={() => setSelectedImage(user.avatar || userImg)}
                   />
                   <h4 className="text-lg font-semibold">{user.name}</h4>
                 </div>
-
-                {/* Unfollow Button */}
                 <FiUserCheck
                   onClick={() => handleUnfollow(user._id)}
                   className="text-red-500 text-2xl cursor-pointer"
@@ -219,6 +205,7 @@ const UserPage = () => {
         </div>
       )}
 
+      {/* Followers */}
       {activeTab === "followers" && (
         <div className="border border-gray-300 rounded-md p-3 max-h-[400px] overflow-y-auto">
           <h2 className="text-lg font-bold mb-3">Followers</h2>
@@ -229,14 +216,29 @@ const UserPage = () => {
             >
               <div className="flex items-center space-x-3">
                 <img
-                  src={user.avatar}
+                  src={user.avatar  || userImg}
                   alt={user.name}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                  onClick={() => setSelectedImage(user.avatar  || userImg)}
                 />
                 <h4 className="text-lg font-semibold">{user.name}</h4>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 👇 Modal for Image */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage  || userImg}
+            alt="Full View"
+            className="max-w-full max-h-96 rounded-lg"
+          />
         </div>
       )}
     </div>

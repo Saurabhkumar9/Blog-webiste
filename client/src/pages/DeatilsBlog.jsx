@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { useForm } from "react-hook-form";
 import {
@@ -24,6 +24,10 @@ const DetailsBlog = () => {
   const [comments, setComments] = useState([]);
   const [details, setDetails] = useState({});
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedLang, setSelectedLang] = useState("en-in");
+
+  const audioRef = useRef(null);
 
   const {
     register,
@@ -81,6 +85,13 @@ const DetailsBlog = () => {
 
   useEffect(() => {
     showDetails();
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+        setIsPlaying(false);
+      }
+    };
   }, []);
 
   const handleDeleteComment = async (commentId) => {
@@ -90,7 +101,9 @@ const DetailsBlog = () => {
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
       if (response.data.success) {
-        setComments(prev => prev.filter(comment => comment._id !== commentId));
+        setComments((prev) =>
+          prev.filter((comment) => comment._id !== commentId)
+        );
       }
     } catch (error) {
       toast.error(error.response.data.message);
@@ -104,28 +117,76 @@ const DetailsBlog = () => {
         { followingId: details.userId },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
-      
-        setIsFollowing(response.data.isFollowing);
-       
+      setIsFollowing(response.data.isFollowing);
     } catch (error) {
       toast.error(error.response?.data?.message || "Error following user");
     }
   };
 
+  const handleTextToSpeech = () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+    } else {
+      const text = details.content || "";
+      console.log(text);
+      console.log(selectedLang);
+
+      // Split text into chunks (100 characters per chunk)
+      const chunks = text.match(/.{1,100}(?=\s|$)/g); // Split by spaces to ensure word boundaries
+      console.log(chunks);
+
+      const playChunks = async (chunks) => {
+        for (let chunk of chunks) {
+          const audio = new Audio(
+            `https://api.voicerss.org/?key=dbea96882d3e4a3d8df9d520d14a2121&hl=${selectedLang}&src=${encodeURIComponent(
+              chunk
+            )}`
+          );
+          audioRef.current = audio;
+          await new Promise((resolve) => {
+            audio.onended = resolve;
+            audio.onerror = resolve;
+            audio.play();
+          });
+        }
+        setIsPlaying(false); // Once all chunks are played, stop the "isPlaying" state
+        audioRef.current = null;
+      };
+
+      setIsPlaying(true);
+      playChunks(chunks); // Play the chunks sequentially
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
-      {/* Blog Image */}
-      <div className="w-full h-64 overflow-hidden rounded-md">
-        <img
-          src={details.image  || logo}
-          alt="Blog Cover"
-          className="w-full h-full object-cover"
-        />
+     <div className="w-full h-64 flex items-center justify-center overflow-hidden rounded-md border-b-2 border-black bg-gray-100">
+  <img
+    src={details.image || logo}
+    alt="Blog Image"
+    className="h-full w-auto object-contain"
+  />
+</div>
+
+
+      {/* Language Selector */}
+      <div className="mt-4 flex justify-end">
+        <select
+          value={selectedLang}
+          onChange={(e) => setSelectedLang(e.target.value)}
+          className="border px-3 py-1 rounded bg-gray-50 text-sm"
+        >
+          <option value="en-in">English (India)</option>
+          <option value="en-us">English (US)</option>
+          <option value="hi-in">Hindi</option>
+        </select>
       </div>
 
-      {/* Follow Button (Below Image) */}
+      {/* Follow Button */}
       {user?.id !== details.userId && (
-        <div className="mt-4 flex justify-end">
+        <div className="mt-2 flex justify-end">
           <button
             onClick={handleFollow}
             className={`px-4 py-2 rounded-full flex items-center gap-2 ${
@@ -148,30 +209,32 @@ const DetailsBlog = () => {
       )}
 
       {/* Blog Content */}
-      <h1 className="text-2xl font-bold mt-4">{details.title}</h1>
+      <div className="flex justify-between items-center mt-4">
+        <h1 className="text-2xl font-bold">{details.title}</h1>
+        <button
+          onClick={handleTextToSpeech}
+          className={`text-blue-600 hover:text-blue-800 text-xl ${
+            isPlaying ? "animate-pulse" : ""
+          }`}
+          title="Listen to Blog"
+        >
+          🔊
+        </button>
+      </div>
       <p className="text-sm text-gray-500">
-        <strong className="text-black text-xl">Category:</strong> {details.categoryName}
+        <strong className="text-black text-xl">Category:</strong>{" "}
+        {details.categoryName}
       </p>
       <p className="text-sm text-red-500">
-        <strong className="text-black text-xl">Description:</strong> {details.description}
+        <strong className="text-black text-xl">Description:</strong>{" "}
+        {details.description}
       </p>
-      <p className="mt-4 text-gray-700">{details.content}</p>
+      <p className="mt-4 text-gray-700 whitespace-pre-line">
+        {details.content}
+      </p>
 
-      {/* Author Info */}
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          <strong className="text-black text-xl">Created by:</strong>{" "}
-          <span className="font-semibold">{details.author}</span>
-        </p>
-        <p className="text-sm text-gray-600">
-          <strong className="text-black">Created Date:</strong>{" "}
-          <span className="font-semibold">
-            {new Date(details.createdAt).toLocaleDateString()}
-          </span>
-        </p>
-      </div>
-
-      {/* Interactions */}
+      {/* Remaining Part... Comments, Likes, etc. */}
+      {/* ... keep everything below same as before ... */}
       <div className="mt-4 flex items-center space-x-4">
         <button
           onClick={handleLike}
@@ -188,7 +251,7 @@ const DetailsBlog = () => {
 
       {/* Comments Section */}
       <div className="mt-6">
-        <h2 className="text-lg font-semibold">Comments</h2>
+        <h2 className="text-sm font-semibold">Comments</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-2">
           <input
             type="text"
@@ -197,7 +260,9 @@ const DetailsBlog = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
           />
           {errors.comment && (
-            <p className="text-red-500 text-sm mt-1">{errors.comment.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.comment.message}
+            </p>
           )}
           <button
             type="submit"
@@ -217,19 +282,19 @@ const DetailsBlog = () => {
               className="border-b py-2 flex flex-col lg:flex-row justify-between"
             >
               <div className="w-full lg:w-[70%]">
-                <p className="text-gray-700">{comment.comment}</p>
+                <p className="text-gray-700 text-sm">{comment.comment}</p>
               </div>
-              <div className="relative p-4 border rounded-md bg-white shadow-md">
-                <p className="text-sm text-gray-500">
+              <div className="relative max-h-16 p-4 border rounded-md bg-white shadow-md">
+                <p className="text-xs text-gray-500">
                   {new Date(comment.createdAt).toLocaleDateString("en-US", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                   })}
                 </p>
-                <p className="text-sm font-semibold">{comment.userName}</p>
+                <p className="text-xs font-semibold">{comment.userName}</p>
                 <MdDelete
-                  className="absolute bottom-2 right-2 text-red-500 cursor-pointer hover:text-red-700 transition text-3xl lg:text-2xl"
+                  className="absolute bottom-2 right-2 text-red-500 cursor-pointer hover:text-red-700 transition text-sm lg:text-xl"
                   onClick={() => handleDeleteComment(comment._id)}
                 />
               </div>

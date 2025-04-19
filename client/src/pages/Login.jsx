@@ -221,8 +221,6 @@
 
 // export default Login;
 
-
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -277,7 +275,9 @@ const Login = () => {
         });
 
         if (response.data.success) {
-          toast.success(response.data.message || "Password reset successfully.");
+          toast.success(
+            response.data.message || "Password reset successfully."
+          );
           reset();
           setIsForgotPassword(false);
           setIsEmailSent(false);
@@ -361,7 +361,9 @@ const Login = () => {
                 placeholder="Enter your name"
                 className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700"
               />
-              {errors.name && <p className="text-red-500 text-sm">Name is required</p>}
+              {errors.name && (
+                <p className="text-red-500 text-sm">Name is required</p>
+              )}
             </div>
           )}
 
@@ -375,14 +377,18 @@ const Login = () => {
                 placeholder="Enter your email"
                 className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-700"
               />
-              {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm">Email is required</p>
+              )}
             </div>
           )}
 
           {/* Password */}
           {!isEmailSent && !isForgotPassword && (
             <div className="mb-4 relative">
-              <label className="block text-gray-600 text-sm mb-1">Password</label>
+              <label className="block text-gray-600 text-sm mb-1">
+                Password
+              </label>
               <input
                 type={showPassword ? "text" : "password"}
                 {...register("password", { required: true })}
@@ -404,7 +410,11 @@ const Login = () => {
           {/* OTP */}
           {isEmailSent && (
             <div className="mb-4">
-              <label className="block text-gray-600 text-sm mb-1">Enter OTP</label>
+              <p className="text-red-600 mt-4 text-center text-sm">
+                Please check your <span className="underline">Spam</span> folder
+                if you don’t find the OTP in your inbox.
+              </p>
+
               <input
                 type="text"
                 value={otp}
@@ -418,7 +428,9 @@ const Login = () => {
           {/* New Password for Forgot Password */}
           {isForgotPassword && isEmailSent && (
             <div className="mb-4 relative">
-              <label className="block text-gray-600 text-sm mb-1">New Password</label>
+              <label className="block text-gray-600 text-sm mb-1">
+                New Password
+              </label>
               <input
                 type={showPassword ? "text" : "password"}
                 value={newPassword}
@@ -439,7 +451,9 @@ const Login = () => {
             type="submit"
             disabled={isLoading}
             className={`w-full py-2 rounded text-white font-semibold ${
-              isLoading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+              isLoading
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
             }`}
           >
             {isLoading
