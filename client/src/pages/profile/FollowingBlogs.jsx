@@ -8,7 +8,7 @@ const FollowingBlogs = () => {
   const sendToken=localStorage.getItem('token')
 
   const fetchBlogsUser=async()=>{
-    const response=await axios.get(`${BASE_API_URL}/user/follow-user-blog`,
+    const response=await axios.get(`${BASE_API_URL}/api/user/follow-user-blog`,
       {
         headers: {
           Authorization: `Bearer ${sendToken}`,

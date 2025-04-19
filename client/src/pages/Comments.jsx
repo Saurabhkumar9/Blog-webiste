@@ -12,7 +12,7 @@ const Comments = () => {
   const showDetails = async () => {
     try {
       const response = await axios.get(
-        `${BASE_API_URL}/user/find-single-blog/${id}`,{headers: {
+        `${BASE_API_URL}/api/user/find-single-blog/${id}`,{headers: {
           Authorization: `Bearer ${sendToken}`,
         },
     });

@@ -32,7 +32,7 @@ const CreateBlog = () => {
 
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/create-blog`,
+        `${BASE_API_URL}/api/user/create-blog`,
         formData,
         {
           headers: {
@@ -58,7 +58,7 @@ const CreateBlog = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${BASE_API_URL}/user/category-show`, {
+      const response = await axios.get(`${BASE_API_URL}/api/user/category-show`, {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },

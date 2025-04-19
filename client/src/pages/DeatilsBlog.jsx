@@ -39,7 +39,7 @@ const DetailsBlog = () => {
   const handleLike = async () => {
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/like`,
+        `${BASE_API_URL}/api/user/like`,
         { BlogId: id },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
@@ -55,7 +55,7 @@ const DetailsBlog = () => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/comment-add`,
+        `${BASE_API_URL}/api/user/comment-add`,
         { comment: data.comment, BlogId: id },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
@@ -69,7 +69,7 @@ const DetailsBlog = () => {
   const showDetails = async () => {
     try {
       const response = await axios.get(
-        `${BASE_API_URL}/user/find-single-blog/${id}`,
+        `${BASE_API_URL}/api/user/find-single-blog/${id}`,
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
       if (response.data.success) {
@@ -97,7 +97,7 @@ const DetailsBlog = () => {
   const handleDeleteComment = async (commentId) => {
     try {
       const response = await axios.delete(
-        `${BASE_API_URL}/user/comment/${commentId}`,
+        `${BASE_API_URL}/api/user/comment/${commentId}`,
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
       if (response.data.success) {
@@ -113,7 +113,7 @@ const DetailsBlog = () => {
   const handleFollow = async () => {
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/follow`,
+        `${BASE_API_URL}/api/user/follow`,
         { followingId: details.userId },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );

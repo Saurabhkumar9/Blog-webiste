@@ -16,7 +16,7 @@ const Notification = () => {
 
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/add-review`,
+        `${BASE_API_URL}/api/user/add-review`,
         newReview,
         {
           headers: {

@@ -11,7 +11,7 @@ const AllBlogs = () => {
 
   const fetchAllBlogUser = async () => {
     try {
-      const response = await axios.get(`${BASE_API_URL}/user/show-all-user-blog`);
+      const response = await axios.get(`${BASE_API_URL}/api/user/show-all-user-blog`);
       if (response.data.success) {
         setAllBlogs(response.data.showAllBlogs);
       }

@@ -16,7 +16,7 @@ const MyBlogs = () => {
 
   const fetchBlogs = async () => {
     try {
-      const response = await axios.get(`${BASE_API_URL}/user/show-blog`, {
+      const response = await axios.get(`${BASE_API_URL}/api/user/show-blog`, {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },
@@ -42,7 +42,7 @@ const MyBlogs = () => {
     setLoading(true); 
 
     try {
-      const response = await axios.delete(`${BASE_API_URL}/user/delete/${id}`, {
+      const response = await axios.delete(`${BASE_API_URL}/api/user/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },

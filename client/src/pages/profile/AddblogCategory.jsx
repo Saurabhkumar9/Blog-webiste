@@ -32,7 +32,7 @@ const AddblogCategory = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        `${BASE_API_URL}/user/category-show`,
+        `${BASE_API_URL}/api/user/category-show`,
         {
           headers: {
             Authorization: `Bearer ${sendToken}`,
@@ -68,7 +68,7 @@ const AddblogCategory = () => {
 
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/category-add`,
+        `${BASE_API_URL}/api/user/category-add`,
         info,
         {
           headers: {

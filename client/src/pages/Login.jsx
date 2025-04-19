@@ -1,226 +1,3 @@
-// import React, { useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { FaEye, FaEyeSlash } from "react-icons/fa";
-// import axios from "axios";
-// import { toast } from "react-toastify";
-// import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
-
-// const BASE_API_URL = import.meta.env.VITE_API_URL;
-
-// const Login = () => {
-//   const { login } = useAuth();
-//   const navigate = useNavigate();
-//   const [isSignup, setIsSignup] = useState(false);
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [isForgotPassword, setIsForgotPassword] = useState(false);
-//   const [isEmailSent, setIsEmailSent] = useState(false);
-//   const [email, setEmail] = useState("");
-//   const [otp, setOtp] = useState("");
-//   const [isLoading, setIsLoading] = useState(false); // 👈 Loader state
-
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors },
-//     reset,
-//   } = useForm();
-
-//   const onSubmit = async (data) => {
-//     setIsLoading(true);
-//     try {
-//       let response;
-
-//       if (isForgotPassword) {
-//         response = await axios.post(`${BASE_API_URL}/user/password-reset`, {
-//           email: data.email,
-//           password: data.password,
-//         });
-
-//         if (response.data.success) {
-//           reset();
-//           toast.success(response.data.message);
-//           setTimeout(() => {
-//             setIsForgotPassword(false);
-//           }, 1000);
-//         } else {
-//           toast.error(response.data.message || "Password reset failed");
-//         }
-//       } else if (isSignup && !isEmailSent) {
-//         response = await axios.post(`${BASE_API_URL}/user/register`, {
-//           name: data.name,
-//           email: data.email,
-//           password: data.password,
-//         });
-
-//         if (response.data.success) {
-//           toast.success(response.data.message || "Email Sent. Please verify.");
-//           setIsEmailSent(true);
-//           setEmail(data.email);
-//         } else {
-//           toast.error(response.data.message || "Signup Failed!");
-//         }
-//       } else if (isSignup && isEmailSent) {
-//         response = await axios.post(`${BASE_API_URL}/user/verify-email`, {
-//           email,
-//           otp,
-//         });
-
-//         if (response.data.success) {
-//           toast.success("Email Verified! You can now login.");
-//           reset();
-//           setIsSignup(false);
-//           setIsEmailSent(false);
-//           setOtp("");
-//         } else {
-//           toast.error(response.data.message || "Invalid OTP");
-//         }
-//       } else {
-//         response = await axios.post(`${BASE_API_URL}/user/login`, {
-//           email: data.email,
-//           password: data.password,
-//         });
-
-//         login(response.data.token);
-//         toast.success(response.data.message);
-//         reset();
-//         setTimeout(() => {
-//           navigate("/");
-//         }, 2000);
-//       }
-//     } catch (error) {
-//       toast.error(error.response?.data?.message || "Something went wrong!");
-//     } finally {
-//       setIsLoading(false); // 👈 End loader in all cases
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-//       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-//         <h2 className="text-2xl font-semibold text-center mb-4">
-//           {isForgotPassword
-//             ? "Update Password"
-//             : isSignup
-//             ? isEmailSent
-//               ? "Verify Email"
-//               : "Sign Up"
-//             : "Login"}
-//         </h2>
-
-//         {/* Form */}
-//         <form onSubmit={handleSubmit(onSubmit)}>
-//           {isSignup && !isForgotPassword && !isEmailSent && (
-//             <div className="mb-4">
-//               <label className="block text-gray-600 text-sm mb-1">Name</label>
-//               <input
-//                 type="text"
-//                 {...register("name", { required: isSignup })}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-//                 placeholder="Enter your name"
-//               />
-//               {errors.name && (
-//                 <p className="text-red-500 text-sm mt-1">Name is required</p>
-//               )}
-//             </div>
-//           )}
-
-//           {!isEmailSent && (
-//             <div className="mb-4">
-//               <label className="block text-gray-600 text-sm mb-1">Email</label>
-//               <input
-//                 type="email"
-//                 {...register("email", { required: true })}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-//                 placeholder="Enter your email"
-//               />
-//               {errors.email && (
-//                 <p className="text-red-500 text-sm mt-1">Email is required</p>
-//               )}
-//             </div>
-//           )}
-
-//           {!isForgotPassword && !isEmailSent && (
-//             <div className="mb-4 relative">
-//               <label className="block text-gray-600 text-sm mb-1">
-//                 Password
-//               </label>
-//               <input
-//                 type={showPassword ? "text" : "password"}
-//                 {...register("password", { required: true })}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700 pr-10"
-//                 placeholder="Enter your password"
-//               />
-//               <span
-//                 className="absolute right-3 top-10 cursor-pointer text-gray-500"
-//                 onClick={() => setShowPassword(!showPassword)}
-//               >
-//                 {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-//               </span>
-//               {errors.password && (
-//                 <p className="text-red-500 text-sm mt-1">
-//                   Password is required
-//                 </p>
-//               )}
-//             </div>
-//           )}
-
-//           {isEmailSent && (
-//             <div className="mb-4">
-//               <label className="block text-gray-600 text-sm mb-1">
-//                 Enter OTP
-//               </label>
-//               <input
-//                 type="text"
-//                 value={otp}
-//                 onChange={(e) => setOtp(e.target.value)}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-//                 placeholder="Enter OTP"
-//               />
-//             </div>
-//           )}
-
-//           <button
-//             type="submit"
-//             disabled={isLoading}
-//             className={`w-full py-2 rounded text-white font-semibold ${
-//               isLoading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
-//             } focus:outline-none focus:ring-2 focus:ring-blue-400`}
-//           >
-//             {isLoading
-//               ? "Please wait..."
-//               : isForgotPassword
-//               ? "Update Password"
-//               : isSignup
-//               ? isEmailSent
-//                 ? "Verify Email"
-//                 : "Sign Up"
-//               : "Login"}
-//           </button>
-//         </form>
-
-//         {!isForgotPassword && (
-//           <p className="text-sm text-gray-600 mt-4 text-center">
-//             {isSignup ? "Already have an account?" : "New user?"}{" "}
-//             <span
-//               className="text-blue-500 cursor-pointer hover:underline"
-//               onClick={() => {
-//                 setIsSignup(!isSignup);
-//                 setIsEmailSent(false);
-//                 setOtp("");
-//               }}
-//             >
-//               {isSignup ? "Login" : "Sign Up"}
-//             </span>
-//           </p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Login;
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -256,7 +33,7 @@ const Login = () => {
       let response;
 
       if (isForgotPassword && !isEmailSent) {
-        response = await axios.post(`${BASE_API_URL}/user/send-reset-otp`, {
+        response = await axios.post(`${BASE_API_URL}/api/user/send-reset-otp`, {
           email: data.email,
         });
 
@@ -268,7 +45,7 @@ const Login = () => {
           toast.error(response.data.message || "Failed to send OTP.");
         }
       } else if (isForgotPassword && isEmailSent) {
-        response = await axios.post(`${BASE_API_URL}/user/password-reset`, {
+        response = await axios.post(`${BASE_API_URL}/api/user/password-reset`, {
           email,
           otp,
           Password: newPassword,
@@ -287,7 +64,7 @@ const Login = () => {
           toast.error(response.data.message || "Invalid OTP or reset failed.");
         }
       } else if (isSignup && !isEmailSent) {
-        response = await axios.post(`${BASE_API_URL}/user/register`, {
+        response = await axios.post(`${BASE_API_URL}/api/user/register`, {
           name: data.name,
           email: data.email,
           password: data.password,
@@ -301,7 +78,7 @@ const Login = () => {
           toast.error(response.data.message || "Signup failed.");
         }
       } else if (isSignup && isEmailSent) {
-        response = await axios.post(`${BASE_API_URL}/user/verify-email`, {
+        response = await axios.post(`${BASE_API_URL}/api/user/verify-email`, {
           email,
           otp,
         });
@@ -316,7 +93,7 @@ const Login = () => {
           toast.error(response.data.message || "Invalid OTP");
         }
       } else {
-        response = await axios.post(`${BASE_API_URL}/user/login`, {
+        response = await axios.post(`${BASE_API_URL}/api/user/login`, {
           email: data.email,
           password: data.password,
         });

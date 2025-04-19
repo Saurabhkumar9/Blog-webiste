@@ -18,7 +18,7 @@ const UserPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${BASE_API_URL}/user/show/user`, {
+      const response = await axios.get(`${BASE_API_URL}/api/user/show/user`, {
         headers: { Authorization: `Bearer ${sendToken}` },
       });
       setUsers(response.data.findUser);
@@ -29,7 +29,7 @@ const UserPage = () => {
 
   const fetchFollowing = async () => {
     try {
-      const response = await axios.get(`${BASE_API_URL}/user/fetch/follow`, {
+      const response = await axios.get(`${BASE_API_URL}/api/user/fetch/follow`, {
         headers: { Authorization: `Bearer ${sendToken}` },
       });
       const followingIds = response.data.showFollower.map(
@@ -42,7 +42,7 @@ const UserPage = () => {
   const fetchFollowers = async () => {
     try {
       const response = await axios.get(
-        `${BASE_API_URL}/user/following-user`,
+        `${BASE_API_URL}/api/user/following-user`,
         {
           headers: { Authorization: `Bearer ${sendToken}` },
         }
@@ -60,7 +60,7 @@ const UserPage = () => {
   const handleFollow = async (userId) => {
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/follow`,
+        `${BASE_API_URL}/api/user/follow`,
         { followingId: userId },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );
@@ -76,7 +76,7 @@ const UserPage = () => {
   const handleUnfollow = async (userId) => {
     try {
       const response = await axios.post(
-        `${BASE_API_URL}/user/follow`,
+        `${BASE_API_URL}/api/user/follow`,
         { followingId: userId },
         { headers: { Authorization: `Bearer ${sendToken}` } }
       );

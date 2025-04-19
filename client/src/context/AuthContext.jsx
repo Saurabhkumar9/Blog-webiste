@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
   const getUser = async () => {
     try {
-      const response = await axios.get(`${BASE_API_URL}/user/show/profile`, {
+      const response = await axios.get(`${BASE_API_URL}/api/user/show/profile`, {
         headers: {
           Authorization: `Bearer ${sendToken}`,
         },
